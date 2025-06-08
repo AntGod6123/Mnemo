@@ -10,10 +10,18 @@ router = APIRouter()
 
 class ConfigModel(BaseModel):
     zim_dir: str
+    llm_enabled: bool = False
+    llm_url: str = "http://localhost:11434/api/generate"
+    llm_api_key: str | None = None
 
 def load_config():
     if not os.path.exists(CONFIG_PATH):
-        return {"zim_dir": "/data/zim"}
+        return {
+            "zim_dir": "/data/zim",
+            "llm_enabled": False,
+            "llm_url": "http://localhost:11434/api/generate",
+            "llm_api_key": ""
+        }
     with open(CONFIG_PATH) as f:
         return json.load(f)
 

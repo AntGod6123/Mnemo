@@ -2,12 +2,20 @@ import React, { useEffect, useState } from 'react';
 
 export default function PluginManager() {
   const [zimDir, setZimDir] = useState('');
+  const [llmEnabled, setLlmEnabled] = useState(false);
+  const [llmUrl, setLlmUrl] = useState('');
+  const [llmKey, setLlmKey] = useState('');
   const [message, setMessage] = useState('');
 
   useEffect(() => {
     fetch('/admin/config')
       .then(res => res.json())
-      .then(data => setZimDir(data.zim_dir || ''));
+      .then(data => {
+        setZimDir(data.zim_dir || '');
+        setLlmEnabled(data.llm_enabled || false);
+        setLlmUrl(data.llm_url || '');
+        setLlmKey(data.llm_api_key || '');
+      });
   }, []);
 
   const saveConfig = async () => {
@@ -15,7 +23,12 @@ export default function PluginManager() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
-      body: JSON.stringify({ zim_dir: zimDir })
+      body: JSON.stringify({
+        zim_dir: zimDir,
+        llm_enabled: llmEnabled,
+        llm_url: llmUrl,
+        llm_api_key: llmKey
+      })
     });
     const result = await res.json();
     setMessage(result.message || 'Saved');
@@ -32,6 +45,32 @@ export default function PluginManager() {
           onChange={e => setZimDir(e.target.value)}
         />
       </div>
+      <div className="mb-4">
+        <label className="inline-flex items-center gap-2">
+          <input type="checkbox" checked={llmEnabled} onChange={e => setLlmEnabled(e.target.checked)} />
+          Enable LLM
+        </label>
+      </div>
+      {llmEnabled && (
+        <div className="mb-4 space-y-4">
+          <div>
+            <label className="block mb-1">LLM URL</label>
+            <input
+              className="w-full p-2 border rounded dark:bg-gray-800 dark:text-white"
+              value={llmUrl}
+              onChange={e => setLlmUrl(e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="block mb-1">API Key</label>
+            <input
+              className="w-full p-2 border rounded dark:bg-gray-800 dark:text-white"
+              value={llmKey}
+              onChange={e => setLlmKey(e.target.value)}
+            />
+          </div>
+        </div>
+      )}
       <button
         onClick={saveConfig}
         className="px-4 py-2 bg-blue-600 text-white rounded"
