@@ -13,6 +13,7 @@ Built for educators, researchers, archivists, and knowledge enthusiasts who want
 - 📑 **Tabbed Article Viewer** with rich media handling
 - 🗣️ **Translation Plugin** powered by Argos Translate
 - 🌐 **One-Click Page Translation** with automatic language detection
+- 📄 **Export to PDF** for offline sharing of any open article
 - 💡 **LAN Sharing** for offline local networks
 - 🧩 **Plugin System** for extensions like summaries, translations, filters
 - 🔒 **Admin-Only Controls** for plugin and ZIM management

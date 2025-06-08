@@ -4,6 +4,9 @@ WORKDIR /app
 
 COPY . /app
 
+# wkhtmltopdf is required for PDF generation
+RUN apt-get update && apt-get install -y wkhtmltopdf && rm -rf /var/lib/apt/lists/*
+
 RUN pip install --no-cache-dir \
     fastapi \
     uvicorn \
@@ -17,6 +20,7 @@ RUN pip install --no-cache-dir \
     aiofiles \
     requests \
     PyMuPDF \
+    pdfkit \
     python-dotenv
 
 # Preload common Argos Translate packages

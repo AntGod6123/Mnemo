@@ -1,5 +1,7 @@
 from fastapi import APIRouter, HTTPException
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, StreamingResponse
+import io
+import pdfkit
 from routes.zim_loader import get_zim_metadata, get_article
 
 router = APIRouter()
@@ -15,3 +17,19 @@ def get_article_html(zim_id: str, path: str):
     if article:
         return HTMLResponse(article.content or "")
     raise HTTPException(status_code=404, detail="Article not found")
+
+
+@router.get("/article/{zim_id}/{path:path}/pdf")
+def get_article_pdf(zim_id: str, path: str):
+    """Return the requested article rendered as a PDF file."""
+    article = get_article(zim_id, path)
+    if not article:
+        raise HTTPException(status_code=404, detail="Article not found")
+
+    pdf_bytes = pdfkit.from_string(article.content or "", False)
+    filename = path.split("/")[-1] or "article"
+    return StreamingResponse(
+        io.BytesIO(pdf_bytes),
+        media_type="application/pdf",
+        headers={"Content-Disposition": f"attachment; filename={filename}.pdf"},
+    )
