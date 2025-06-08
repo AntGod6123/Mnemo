@@ -6,6 +6,7 @@ export default function PluginManager() {
   const [llmUrl, setLlmUrl] = useState('');
   const [llmKey, setLlmKey] = useState('');
   const [message, setMessage] = useState('');
+  const [overridesText, setOverridesText] = useState('');
 
   useEffect(() => {
     fetch('/admin/config')
@@ -15,6 +16,7 @@ export default function PluginManager() {
         setLlmEnabled(data.llm_enabled || false);
         setLlmUrl(data.llm_url || '');
         setLlmKey(data.llm_api_key || '');
+        setOverridesText(JSON.stringify(data.zim_overrides || {}, null, 2));
       });
   }, []);
 
@@ -27,7 +29,8 @@ export default function PluginManager() {
         zim_dir: zimDir,
         llm_enabled: llmEnabled,
         llm_url: llmUrl,
-        llm_api_key: llmKey
+        llm_api_key: llmKey,
+        zim_overrides: JSON.parse(overridesText || '{}')
       })
     });
     const result = await res.json();
@@ -43,6 +46,14 @@ export default function PluginManager() {
           className="w-full p-2 border rounded dark:bg-gray-800 dark:text-white"
           value={zimDir}
           onChange={e => setZimDir(e.target.value)}
+        />
+      </div>
+      <div className="mb-4">
+        <label className="block mb-1">Collection Overrides (JSON)</label>
+        <textarea
+          className="w-full p-2 border rounded dark:bg-gray-800 dark:text-white h-32"
+          value={overridesText}
+          onChange={e => setOverridesText(e.target.value)}
         />
       </div>
       <div className="mb-4">

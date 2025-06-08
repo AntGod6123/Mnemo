@@ -52,6 +52,7 @@ def load_zim_files():
 
         config = load_config()
         zim_dir = Path(config.get("zim_dir", "/data/zim"))
+        overrides = config.get("zim_overrides", {})
 
         if not zim_dir.exists():
             print("ZIM directory not found")
@@ -70,12 +71,15 @@ def load_zim_files():
 
                 rebuild_search_index(zim_path.name, articles)
 
+                over = overrides.get(zim_path.name, {})
                 zim_meta = {
                     "file": zim_path.name,
-                    "title": reader.title,
+                    "title": over.get("title") or reader.title,
                     "lang": reader.language,
                     "count": len(articles)
                 }
+                if "image" in over:
+                    zim_meta["image"] = over["image"]
                 meta_cache.append(zim_meta)
                 ZIM_META.append(zim_meta)
 

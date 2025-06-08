@@ -31,10 +31,17 @@ export default function Home({ onOpenTab }) {
               rel="noopener noreferrer"
               className="block p-4 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition text-left shadow-sm"
             >
-              <div className="flex items-center gap-2 mb-2">
-                <BookOpenIcon size={20} />
-                <span className="font-medium truncate">{zim.title || zim.file}</span>
-              </div>
+              {zim.image ? (
+                <img src={zim.image} alt="" className="w-full h-24 object-contain mb-2" />
+              ) : (
+                <div className="flex items-center gap-2 mb-2">
+                  <BookOpenIcon size={20} />
+                  <span className="font-medium truncate">{zim.title || zim.file}</span>
+                </div>
+              )}
+              {zim.image && (
+                <div className="font-medium truncate mb-2 text-center">{zim.title || zim.file}</div>
+              )}
               <div className="text-sm text-gray-600 dark:text-gray-400">
                 {zim.lang.toUpperCase()} • {zim.count.toLocaleString()} articles
               </div>

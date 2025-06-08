@@ -54,3 +54,16 @@ docker-compose down
 Open the admin panel and supply the URL and API key of your own LLM service.
 Unchecking the option hides these fields and disables AI responses in the
 search interface.
+
+### Customizing Collections
+
+Admins can provide custom titles and images for each ZIM file. In the server
+settings dialog, edit the **Collection Overrides** JSON field. Keys are the
+ZIM filenames and values may include `title` and `image` URLs:
+
+```json
+{
+  "wikipedia_en.zim": { "title": "Wikipedia", "image": "/static/wiki.png" }
+}
+```
+These overrides appear on the home page grid after saving and reloading.
