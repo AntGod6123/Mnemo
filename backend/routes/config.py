@@ -13,6 +13,7 @@ class ConfigModel(BaseModel):
     llm_enabled: bool = False
     llm_url: str = "http://localhost:11434/api/generate"
     llm_api_key: str | None = None
+    zim_overrides: dict[str, dict[str, str]] = {}
 
 def load_config():
     if not os.path.exists(CONFIG_PATH):
@@ -20,10 +21,13 @@ def load_config():
             "zim_dir": "/data/zim",
             "llm_enabled": False,
             "llm_url": "http://localhost:11434/api/generate",
-            "llm_api_key": ""
+            "llm_api_key": "",
+            "zim_overrides": {}
         }
     with open(CONFIG_PATH) as f:
-        return json.load(f)
+        data = json.load(f)
+        data.setdefault("zim_overrides", {})
+        return data
 
 def save_config(data):
     with open(CONFIG_PATH, "w") as f:
