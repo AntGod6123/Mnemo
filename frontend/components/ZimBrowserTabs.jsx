@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { apiFetch, API_BASE } from '../api';
 
 export default function ZimBrowserTabs() {
   const [tabs, setTabs] = useState([]);
@@ -36,7 +37,7 @@ export default function ZimBrowserTabs() {
   };
 
   const openTranslateModal = async (tab) => {
-    const res = await fetch('/translate/models');
+    const res = await apiFetch('/translate/models');
     const mods = await res.json();
     setModels(mods);
     setToLang('');
@@ -46,7 +47,7 @@ export default function ZimBrowserTabs() {
 
   const runTranslate = async () => {
     if (!targetTab || !toLang) return;
-    const res = await fetch('/translate/article', {
+    const res = await apiFetch('/translate/article', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ zim_id: targetTab.zimId, path: targetTab.path, to_lang: toLang })
@@ -71,7 +72,7 @@ export default function ZimBrowserTabs() {
             }}
             onContextMenu={(e) => {
               e.preventDefault();
-              window.open(`/article/${tab.zimId}/${tab.path}`, '_blank');
+              window.open(`${API_BASE}/article/${tab.zimId}/${tab.path}`, '_blank');
             }}
           >
             {tab.title}
@@ -84,7 +85,7 @@ export default function ZimBrowserTabs() {
         <div key={tab.id} className={tab.id === active ? "p-4" : "hidden"}>
           <iframe
             title={tab.title}
-            src={tab.translated ? undefined : `/article/${tab.zimId}/${tab.path}`}
+            src={tab.translated ? undefined : `${API_BASE}/article/${tab.zimId}/${tab.path}`}
             srcDoc={tab.translated ? `<html><body>${tab.translated}</body></html>` : undefined}
             className="w-full h-[80vh] border"
           />

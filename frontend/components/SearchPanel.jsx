@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { apiFetch } from '../api';
 
 export default function SearchPanel({ onOpenTab }) {
   const [query, setQuery] = useState('');
@@ -7,18 +8,18 @@ export default function SearchPanel({ onOpenTab }) {
   const [llmEnabled, setLlmEnabled] = useState(false);
 
   useEffect(() => {
-    fetch('/admin/config')
+    apiFetch('/admin/config')
       .then(res => res.json())
       .then(cfg => setLlmEnabled(cfg.llm_enabled));
   }, []);
 
   const runSearch = async () => {
-    const res = await fetch(`/search?q=${encodeURIComponent(query)}`);
+    const res = await apiFetch(`/search?q=${encodeURIComponent(query)}`);
     const data = await res.json();
     setResults(data.results || []);
 
     if (llmEnabled) {
-      const llm = await fetch('/llm/query', {
+      const llm = await apiFetch('/llm/query', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query })

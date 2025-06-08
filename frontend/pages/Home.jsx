@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import SearchPanel from '../components/SearchPanel';
 import UserMenu from '../components/UserMenu';
+import { apiFetch } from '../api';
 import { BookOpenIcon } from 'lucide-react';
 
 export default function Home({ onOpenTab }) {
   const [zimFiles, setZimFiles] = useState([]);
 
   useEffect(() => {
-    fetch('/zim/list')
+    apiFetch('/zim/list')
       .then(res => res.json())
       .then(data => setZimFiles(data.zims || []));
   }, []);

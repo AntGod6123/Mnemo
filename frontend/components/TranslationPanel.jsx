@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { apiFetch } from '../api';
 
 export default function TranslationPanel() {
   const [models, setModels] = useState([]);
@@ -8,13 +9,13 @@ export default function TranslationPanel() {
   const [result, setResult] = useState('');
 
   useEffect(() => {
-    fetch('/translate/models')
+    apiFetch('/translate/models')
       .then(res => res.json())
       .then(setModels);
   }, []);
 
   const translate = async () => {
-    const res = await fetch('/translate', {
+    const res = await apiFetch('/translate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text, from_lang: from, to_lang: to })
