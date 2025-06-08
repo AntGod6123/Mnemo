@@ -31,6 +31,6 @@ Built for educators, researchers, archivists, and knowledge enthusiasts who want
 ## 🚀 Quick Start
 
 ```bash
-git clone https://github.com/AntGod6123/Mnemo
+git clone https://github.com/AntGod6123/Mnemo.git
 cd mnemo-browser
 docker-compose up --build
