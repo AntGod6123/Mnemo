@@ -10,7 +10,7 @@ RUN apt-get update && apt-get install -y wkhtmltopdf && rm -rf /var/lib/apt/list
 RUN pip install --no-cache-dir \
     fastapi \
     uvicorn \
-    pyzim \
+    libzim \
     python-multipart \
     argostranslate \
     langdetect \
