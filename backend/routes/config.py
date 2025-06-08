@@ -4,6 +4,7 @@ from pydantic import BaseModel
 import json
 import os
 from routes.zim_loader import load_zim_files
+import argostranslate.package as argos_pkg
 
 CONFIG_PATH = "./data/config.json"
 router = APIRouter()
@@ -45,3 +46,18 @@ def update_config(config: ConfigModel, request: Request):
     save_config(config.dict())
     load_zim_files()  # dynamically reload ZIMs
     return {"message": "Config updated and ZIMs reloaded", "config": config}
+
+
+@router.post("/admin/update-argos")
+def update_argos(request: Request):
+    session = request.cookies.get("zim_admin")
+    if session != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    try:
+        pkgs = argos_pkg.get_available_packages()
+        for p in pkgs:
+            path = argos_pkg.download_package(p)
+            argos_pkg.install_from_path(path)
+        return {"message": "Argos packages updated"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
