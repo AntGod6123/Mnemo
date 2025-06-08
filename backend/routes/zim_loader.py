@@ -5,6 +5,7 @@ import sqlite3
 from pyzim.reader import ZIMReader
 from pathlib import Path
 from threading import Lock
+from logger import logger
 
 ZIM_INDEX = {}
 ZIM_META = []
@@ -55,7 +56,7 @@ def load_zim_files():
         overrides = config.get("zim_overrides", {})
 
         if not zim_dir.exists():
-            print("ZIM directory not found")
+            logger.error("ZIM directory not found")
             return
 
         meta_cache = []
@@ -83,9 +84,9 @@ def load_zim_files():
                 meta_cache.append(zim_meta)
                 ZIM_META.append(zim_meta)
 
-                print(f"Loaded {zim_path.name} with {len(articles)} articles")
+                logger.info(f"Loaded {zim_path.name} with {len(articles)} articles")
             except Exception as e:
-                print(f"Failed to load {zim_path.name}: {e}")
+                logger.error(f"Failed to load {zim_path.name}: {e}")
 
         save_cache(meta_cache)
 

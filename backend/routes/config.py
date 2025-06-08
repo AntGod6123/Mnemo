@@ -5,6 +5,7 @@ import json
 import os
 from routes.zim_loader import load_zim_files
 import argostranslate.package as argos_pkg
+from logger import logger
 
 CONFIG_PATH = "./data/config.json"
 router = APIRouter()
@@ -44,6 +45,7 @@ def update_config(config: ConfigModel, request: Request):
     if session != "admin":
         raise HTTPException(status_code=403, detail="Admin access required")
     save_config(config.dict())
+    logger.info("Configuration updated")
     load_zim_files()  # dynamically reload ZIMs
     return {"message": "Config updated and ZIMs reloaded", "config": config}
 
@@ -58,6 +60,8 @@ def update_argos(request: Request):
         for p in pkgs:
             path = argos_pkg.download_package(p)
             argos_pkg.install_from_path(path)
+        logger.info("Argos packages updated")
         return {"message": "Argos packages updated"}
     except Exception as e:
+        logger.error(f"Argos update failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
