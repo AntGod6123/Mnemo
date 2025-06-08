@@ -8,6 +8,7 @@ export default function PluginManager() {
   const [llmKey, setLlmKey] = useState('');
   const [message, setMessage] = useState('');
   const [overridesText, setOverridesText] = useState('');
+  const [logs, setLogs] = useState('');
 
   useEffect(() => {
     apiFetch('/admin/config')
@@ -45,6 +46,12 @@ export default function PluginManager() {
     });
     const data = await res.json();
     setMessage(data.message || 'Update complete');
+  };
+
+  const loadLogs = async () => {
+    const res = await apiFetch('/admin/logs', { credentials: 'include' });
+    const data = await res.json();
+    setLogs(data.logs || '');
   };
 
   return (
@@ -104,6 +111,17 @@ export default function PluginManager() {
       >
         Update Argos Models
       </button>
+      <button
+        onClick={loadLogs}
+        className="ml-2 px-4 py-2 bg-gray-600 text-white rounded"
+      >
+        Refresh Logs
+      </button>
+      {logs && (
+        <pre className="mt-4 p-2 bg-gray-100 dark:bg-gray-900 text-xs overflow-auto h-60 whitespace-pre-wrap">
+          {logs}
+        </pre>
+      )}
       {message && <div className="mt-2 text-green-600">{message}</div>}
     </div>
   );

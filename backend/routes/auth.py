@@ -3,6 +3,7 @@ from pydantic import BaseModel
 import json
 import os
 import bcrypt
+from logger import logger
 
 router = APIRouter()
 
@@ -24,12 +25,15 @@ def login(data: LoginRequest, response: Response):
         if user["username"] == data.username:
             if bcrypt.checkpw(data.password.encode(), user["password"].encode()):
                 response.set_cookie("zim_admin", user["username"], httponly=True)
+                logger.info(f"User {data.username} logged in")
                 return {"message": "Login successful", "username": user["username"]}
+    logger.warning(f"Failed login attempt for {data.username}")
     raise HTTPException(status_code=401, detail="Invalid credentials")
 
 @router.post("/auth/logout")
 def logout(response: Response):
     response.delete_cookie("zim_admin")
+    logger.info("User logged out")
     return {"message": "Logged out"}
 
 @router.get("/auth/status")
