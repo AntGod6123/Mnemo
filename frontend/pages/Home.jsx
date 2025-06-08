@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import SearchPanel from '../components/SearchPanel';
+import UserMenu from '../components/UserMenu';
 import { BookOpenIcon } from 'lucide-react';
 
 export default function Home({ onOpenTab }) {
@@ -12,8 +13,11 @@ export default function Home({ onOpenTab }) {
   }, []);
 
   return (
-    <div className="p-4 max-w-4xl mx-auto text-center">
-      <h1 className="text-3xl font-bold mb-6">📚 Offline Browser</h1>
+    <div className="p-4 max-w-4xl mx-auto">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">📚 Offline Browser</h1>
+        <UserMenu />
+      </div>
       <SearchPanel onOpenTab={onOpenTab} />
 
       <div className="mt-10">
