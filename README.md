@@ -34,3 +34,16 @@ Built for educators, researchers, archivists, and knowledge enthusiasts who want
 git clone https://github.com/AntGod6123/Mnemo.git
 cd mnemo-browser
 docker-compose up --build
+
+``` 
+
+This command builds the backend, frontend, and LLM containers and then starts
+them. Once the build completes, visit <http://localhost:3000> to use the
+interface. The FastAPI backend is available at <http://localhost:8000> and the
+LLM service runs on <http://localhost:11434>. When you're done, stop the stack
+with <kbd>Ctrl</kbd>+<kbd>C</kbd> and clean up the containers using:
+
+```bash
+docker-compose down
+
+```
