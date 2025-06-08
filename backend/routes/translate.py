@@ -13,13 +13,13 @@ class TranslateRequest(BaseModel):
 def list_models():
     return [
         {
-            "from_code": p.from_code,
-            "to_code": p.to_code,
-            "from_name": p.from_name,
-            "to_name": p.to_name
+            "from_code": t.from_code,
+            "to_code": t.to_code,
+            "from_name": t.from_name,
+            "to_name": t.to_name,
         }
-        for p in argostranslate.translate.get_installed_languages()
-        for p in p.translations
+        for lang in argostranslate.translate.get_installed_languages()
+        for t in lang.translations
     ]
 
 @router.post("/translate")
