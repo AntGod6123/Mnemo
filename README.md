@@ -51,6 +51,16 @@ docker-compose down
 
 ```
 
+### Environment Variables
+
+Set the `SECRET_KEY` environment variable before starting the backend. This
+key signs session cookies, and the server will fail to launch if it is not
+provided.
+
+```bash
+export SECRET_KEY=your-secret-key
+```
+
 Argos Translate models for common languages are installed automatically during
 the build. You can refresh them at any time from the **Server Settings** dialog
 by clicking <kbd>Update Argos Models</kbd>.
