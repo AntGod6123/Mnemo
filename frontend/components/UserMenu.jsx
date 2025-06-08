@@ -16,7 +16,7 @@ export default function UserMenu() {
   const exportPdf = () => {
     const tab = window.activeZimTab;
     if (tab) {
-      window.open(`/article/${tab.zimId}/${tab.path}/pdf`, '_blank');
+      window.open(`${API_BASE}/article/${tab.zimId}/${tab.path}/pdf`, '_blank');
       setOpen(false);
     } else {
       alert('No page selected');
