@@ -11,7 +11,9 @@ router = APIRouter()
 USERS_FILE = "./data/users.json"
 
 # Signed session serializer
-SECRET_KEY = os.environ.get("SECRET_KEY", "mnemo-secret-key")
+SECRET_KEY = os.environ.get("SECRET_KEY")
+if not SECRET_KEY:
+    raise RuntimeError("SECRET_KEY environment variable not set")
 serializer = URLSafeSerializer(SECRET_KEY, salt="mnemo-session")
 
 
