@@ -23,6 +23,14 @@ export default function PluginManager() {
   }, []);
 
   const saveConfig = async () => {
+    let parsedOverrides;
+    try {
+      parsedOverrides = JSON.parse(overridesText || '{}');
+    } catch (err) {
+      setMessage('Invalid overrides JSON');
+      return;
+    }
+
     const res = await apiFetch('/admin/config', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -32,7 +40,7 @@ export default function PluginManager() {
         llm_enabled: llmEnabled,
         llm_url: llmUrl,
         llm_api_key: llmKey,
-        zim_overrides: JSON.parse(overridesText || '{}')
+        zim_overrides: parsedOverrides
       })
     });
     const result = await res.json();
