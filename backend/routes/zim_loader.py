@@ -29,21 +29,35 @@ def try_load_cache():
             return json.load(f)
     return []
 
-def rebuild_search_index(zim_id, articles):
+def rebuild_search_index(zim_id, reader):
+    """Rebuild the FTS search index for a ZIM reader.
+
+    Articles are streamed lazily from the reader to avoid large
+    memory usage when indexing massive collections.
+
+    Returns the number of indexed articles.
+    """
     os.makedirs("./cache", exist_ok=True)
     conn = sqlite3.connect(FTS_DB_PATH)
     cur = conn.cursor()
-    cur.execute("""
+    cur.execute(
+        """
         CREATE VIRTUAL TABLE IF NOT EXISTS articles USING fts5(
             zim_id, title, path
         )
-    """)
+        """
+    )
     cur.execute("DELETE FROM articles WHERE zim_id = ?", (zim_id,))
-    for art in articles:
-        cur.execute("INSERT INTO articles (zim_id, title, path) VALUES (?, ?, ?)",
-                    (zim_id, art.title, art.url))
+    count = 0
+    for art in reader.articles():
+        cur.execute(
+            "INSERT INTO articles (zim_id, title, path) VALUES (?, ?, ?)",
+            (zim_id, art.title, art.url),
+        )
+        count += 1
     conn.commit()
     conn.close()
+    return count
 
 def load_zim_files():
     global ZIM_INDEX, ZIM_META
@@ -64,27 +78,27 @@ def load_zim_files():
         for zim_path in zim_dir.glob("*.zim"):
             try:
                 reader = ZIMReader(str(zim_path))
-                articles = list(reader.articles())
-                ZIM_INDEX[zim_path.name] = {
-                    "reader": reader,
-                    "articles": articles
-                }
-
-                rebuild_search_index(zim_path.name, articles)
+                # Build the FTS search index lazily and determine article count
+                count = rebuild_search_index(zim_path.name, reader)
 
                 over = overrides.get(zim_path.name, {})
                 zim_meta = {
                     "file": zim_path.name,
                     "title": over.get("title") or reader.title,
                     "lang": reader.language,
-                    "count": len(articles)
+                    "count": count,
+                }
+                # Store only the reader and its metadata in memory
+                ZIM_INDEX[zim_path.name] = {
+                    "reader": reader,
+                    "meta": zim_meta,
                 }
                 if "image" in over:
                     zim_meta["image"] = over["image"]
                 meta_cache.append(zim_meta)
                 ZIM_META.append(zim_meta)
 
-                logger.info(f"Loaded {zim_path.name} with {len(articles)} articles")
+                logger.info(f"Loaded {zim_path.name} with {count} articles")
             except Exception as e:
                 logger.error(f"Failed to load {zim_path.name}: {e}")
 
