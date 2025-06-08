@@ -18,6 +18,7 @@ def llm_query(data: LLMQuery):
     if not config.get("llm_enabled"):
         return {"answer": ""}
     llm_url = config.get("llm_url", "http://localhost:11434/api/generate")
+    llm_model = config.get("llm_model", "llama3")
     api_key = config.get("llm_api_key")
     context = ""
 
@@ -27,7 +28,7 @@ def llm_query(data: LLMQuery):
             context = article.content or ""
 
     payload = {
-        "model": "llama3",  # or whatever model is loaded
+        "model": llm_model,
         "prompt": f"{context}\n\nUser question: {data.query}",
         "stream": False
     }
