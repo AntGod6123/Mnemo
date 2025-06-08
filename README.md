@@ -32,5 +32,9 @@ Built for educators, researchers, archivists, and knowledge enthusiasts who want
 
 ```bash
 git clone https://github.com/AntGod6123/Mnemo.git
-cd mnemo-browser
+cd Mnemo
 docker-compose up --build
+```
+
+Navigate to `http://localhost:3000` in your browser once the containers
+have started.
