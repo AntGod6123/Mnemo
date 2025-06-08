@@ -89,3 +89,21 @@ ZIM filenames and values may include `title` and `image` URLs:
 }
 ```
 These overrides appear on the home page grid after saving and reloading.
+
+### Frontend Development
+
+The React interface relies on TailwindCSS. Styles are processed via PostCSS during the Vite build. For local development run:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+To generate the production assets manually use:
+
+```bash
+npm run build
+```
+
+This command runs Tailwind through `postcss.config.js` so all utility classes compile correctly.
