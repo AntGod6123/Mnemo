@@ -1,1 +1,24 @@
-...
+version: '3.9'
+
+services:
+  backend:
+    build: https://github.com/AntGod6123/Mnemo.git#main:backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
+
+  frontend:
+    build: https://github.com/AntGod6123/Mnemo.git#main:frontend
+    ports:
+      - "3000:3000"
+
+  llm:
+    image: ollama/ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+
+volumes:
+  ollama-data:
