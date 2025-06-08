@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Request, HTTPException
 import os
+from .auth import get_session_username
 
 LOG_FILE = "./data/server.log"
 
@@ -7,7 +8,7 @@ router = APIRouter()
 
 @router.get("/admin/logs")
 def read_logs(request: Request):
-    session = request.cookies.get("zim_admin")
+    session = get_session_username(request)
     if session != "admin":
         raise HTTPException(status_code=403, detail="Admin access required")
     if not os.path.exists(LOG_FILE):
