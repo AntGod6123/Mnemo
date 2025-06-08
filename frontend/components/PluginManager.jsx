@@ -27,7 +27,7 @@ export default function PluginManager() {
     try {
       parsedOverrides = JSON.parse(overridesText || '{}');
     } catch (err) {
-      setMessage('Invalid overrides JSON');
+      setMessage(`Invalid overrides JSON: ${err.message}`);
       return;
     }
 
