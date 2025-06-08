@@ -51,6 +51,34 @@ docker-compose down
 
 ```
 
+### Using a JSON Compose File
+
+If you prefer a JSON configuration, create `docker-compose.json` with the
+following contents or copy it from this repository:
+
+```json
+{
+  "version": "3.9",
+  "services": {
+    "backend": {
+      "build": "./backend",
+      "ports": ["8000:8000"],
+      "volumes": ["./data:/app/data"]
+    },
+    "frontend": {
+      "build": "./frontend",
+      "ports": ["3000:3000"]
+    }
+  }
+}
+```
+
+Start the stack with:
+
+```bash
+docker compose -f docker-compose.json up --build
+```
+
 Argos Translate models for common languages are installed automatically during
 the build. You can refresh them at any time from the **Server Settings** dialog
 by clicking <kbd>Update Argos Models</kbd>.
