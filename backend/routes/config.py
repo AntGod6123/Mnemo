@@ -5,6 +5,7 @@ import json
 import os
 from routes.zim_loader import load_zim_files
 import argostranslate.package as argos_pkg
+from .auth import get_session_username
 from logger import logger
 
 CONFIG_PATH = "./data/config.json"
@@ -41,7 +42,7 @@ def get_config():
 
 @router.post("/admin/config")
 def update_config(config: ConfigModel, request: Request):
-    session = request.cookies.get("zim_admin")
+    session = get_session_username(request)
     if session != "admin":
         raise HTTPException(status_code=403, detail="Admin access required")
     save_config(config.dict())
@@ -52,7 +53,7 @@ def update_config(config: ConfigModel, request: Request):
 
 @router.post("/admin/update-argos")
 def update_argos(request: Request):
-    session = request.cookies.get("zim_admin")
+    session = get_session_username(request)
     if session != "admin":
         raise HTTPException(status_code=403, detail="Admin access required")
     try:
