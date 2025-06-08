@@ -57,10 +57,9 @@ def update_argos(request: Request):
     if session != "admin":
         raise HTTPException(status_code=403, detail="Admin access required")
     try:
-        pkgs = argos_pkg.get_available_packages()
-        for p in pkgs:
-            path = argos_pkg.download_package(p)
-            argos_pkg.install_from_path(path)
+        argos_pkg.update_package_index()
+        for p in argos_pkg.get_available_packages():
+            p.install()
         logger.info("Argos packages updated")
         return {"message": "Argos packages updated"}
     except Exception as e:
