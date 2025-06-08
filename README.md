@@ -12,6 +12,7 @@ Built for educators, researchers, archivists, and knowledge enthusiasts who want
 - 🤖 **Optional LLM Assistant** (connect your own service)
 - 📑 **Tabbed Article Viewer** with rich media handling
 - 🗣️ **Translation Plugin** powered by Argos Translate
+- 🌐 **One-Click Page Translation** with automatic language detection
 - 💡 **LAN Sharing** for offline local networks
 - 🧩 **Plugin System** for extensions like summaries, translations, filters
 - 🔒 **Admin-Only Controls** for plugin and ZIM management
@@ -48,6 +49,10 @@ and clean up the containers using:
 docker-compose down
 
 ```
+
+Argos Translate models for common languages are installed automatically during
+the build. You can refresh them at any time from the **Server Settings** dialog
+by clicking <kbd>Update Argos Models</kbd>.
 
 ### Enabling LLM Features
 

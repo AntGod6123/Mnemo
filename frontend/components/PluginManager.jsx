@@ -37,6 +37,15 @@ export default function PluginManager() {
     setMessage(result.message || 'Saved');
   };
 
+  const updateArgos = async () => {
+    const res = await fetch('/admin/update-argos', {
+      method: 'POST',
+      credentials: 'include'
+    });
+    const data = await res.json();
+    setMessage(data.message || 'Update complete');
+  };
+
   return (
     <div className="p-4">
       <h2 className="text-xl font-bold mb-4">Plugin Manager</h2>
@@ -87,6 +96,12 @@ export default function PluginManager() {
         className="px-4 py-2 bg-blue-600 text-white rounded"
       >
         Save & Reload
+      </button>
+      <button
+        onClick={updateArgos}
+        className="ml-2 px-4 py-2 bg-green-600 text-white rounded"
+      >
+        Update Argos Models
       </button>
       {message && <div className="mt-2 text-green-600">{message}</div>}
     </div>
