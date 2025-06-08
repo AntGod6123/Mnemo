@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, forwardRef, useImperativeHandle } from 'react';
 import { apiFetch, API_BASE } from '../api';
 
-export default function ZimBrowserTabs() {
+const ZimBrowserTabs = forwardRef((props, ref) => {
   const [tabs, setTabs] = useState([]);
   const [active, setActive] = useState(null);
   const [showTranslate, setShowTranslate] = useState(false);
@@ -21,8 +21,9 @@ export default function ZimBrowserTabs() {
     }
     setActive(id);
   };
-  // expose opener globally for other components
-  window.openZimTab = openTab;
+
+  // expose imperative handle so parents can trigger tab opens
+  useImperativeHandle(ref, () => ({ openTab }));
 
   const closeTab = (id) => {
     setTabs(tabs.filter(t => t.id !== id));
@@ -113,4 +114,6 @@ export default function ZimBrowserTabs() {
       )}
     </div>
   );
-}
+});
+
+export default ZimBrowserTabs;
