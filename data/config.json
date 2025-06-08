@@ -1,1 +1,6 @@
-{ "zim_dir": "/data/zim" }
+{
+  "zim_dir": "/data/zim",
+  "llm_enabled": false,
+  "llm_url": "http://localhost:11434/api/generate",
+  "llm_api_key": ""
+}

@@ -9,7 +9,7 @@ Built for educators, researchers, archivists, and knowledge enthusiasts who want
 ## ✨ Features
 
 - 🔍 **Unified Search** across multiple ZIM files (with fuzzy matching)
-- 🤖 **Local LLM Assistant** (via Ollama, llama.cpp, etc.)
+- 🤖 **Optional LLM Assistant** (connect your own service)
 - 📑 **Tabbed Article Viewer** with rich media handling
 - 🗣️ **Translation Plugin** powered by Argos Translate
 - 💡 **LAN Sharing** for offline local networks
@@ -24,7 +24,7 @@ Built for educators, researchers, archivists, and knowledge enthusiasts who want
 - **Backend**: Python FastAPI with modular services (ZIM loader, search, LLM, translation)
 - **Frontend**: React + Vite + TailwindCSS for a fast, responsive UI
 - **Storage**: SQLite (bookmarks, user profiles, config)
-- **Deployment**: Docker Compose with support for NGINX + Ollama
+- **Deployment**: Docker Compose for backend and frontend
 
 ---
 
@@ -37,13 +37,20 @@ docker-compose up --build
 
 ``` 
 
-This command builds the backend, frontend, and LLM containers and then starts
-them. Once the build completes, visit <http://localhost:3000> to use the
-interface. The FastAPI backend is available at <http://localhost:8000> and the
-LLM service runs on <http://localhost:11434>. When you're done, stop the stack
-with <kbd>Ctrl</kbd>+<kbd>C</kbd> and clean up the containers using:
+This command builds the backend and frontend containers. After they start,
+visit <http://localhost:3000> to use the interface. The FastAPI backend is
+available at <http://localhost:8000>. If you want LLM features, run your own
+service separately (for example an Ollama container) and configure its URL in
+the admin panel. When you're done, stop the stack with <kbd>Ctrl</kbd>+<kbd>C</kbd>
+and clean up the containers using:
 
 ```bash
 docker-compose down
 
 ```
+
+### Enabling LLM Features
+
+Open the admin panel and supply the URL and API key of your own LLM service.
+Unchecking the option hides these fields and disables AI responses in the
+search interface.

@@ -1,11 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 export default function LLMChatPanel() {
   const [chat, setChat] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [llmEnabled, setLlmEnabled] = useState(false);
+
+  useEffect(() => {
+    fetch('/admin/config')
+      .then(res => res.json())
+      .then(cfg => setLlmEnabled(cfg.llm_enabled));
+  }, []);
 
   const sendMessage = async () => {
+    if (!llmEnabled) return;
     setLoading(true);
     const res = await fetch('/llm/query', {
       method: 'POST',
@@ -17,6 +25,8 @@ export default function LLMChatPanel() {
     setInput('');
     setLoading(false);
   };
+
+  if (!llmEnabled) return null;
 
   return (
     <div className="p-4">

@@ -13,12 +13,4 @@ services:
     ports:
       - "3000:3000"
 
-  llm:
-    image: ollama/ollama
-    ports:
-      - "11434:11434"
-    volumes:
-      - ollama-data:/root/.ollama
-
-volumes:
-  ollama-data:
+  # Provision your own LLM service and update the config via the admin UI
