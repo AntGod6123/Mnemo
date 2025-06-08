@@ -2,7 +2,51 @@
 import os
 import json
 import sqlite3
-from pyzim.reader import ZIMReader
+from libzim.reader import Archive
+
+
+class Article:
+    def __init__(self, title: str, url: str, content: str):
+        self.title = title
+        self.url = url
+        self.content = content
+
+
+class ZIMReader:
+    def __init__(self, filename: str):
+        self.archive = Archive(filename)
+        keys = set(self.archive.metadata_keys)
+        self.title = self._get_meta(keys, "Title") or self._get_meta(keys, "Name") or filename
+        self.language = self._get_meta(keys, "Language") or ""
+
+    def _get_meta(self, keys, key):
+        if key in keys:
+            try:
+                return self.archive.get_metadata(key).decode("utf-8", "ignore")
+            except Exception:
+                return None
+        return None
+
+    def articles(self):
+        for idx in range(self.archive.article_count):
+            try:
+                entry = self.archive._get_entry_by_id(idx)
+                if entry.is_redirect:
+                    continue
+                item = entry.get_item()
+                content = item.content.tobytes().decode("utf-8", "ignore")
+                yield Article(entry.title, entry.path, content)
+            except Exception:
+                continue
+
+    def get_article(self, path: str):
+        try:
+            entry = self.archive.get_entry_by_path(path)
+            item = entry.get_item()
+            content = item.content.tobytes().decode("utf-8", "ignore")
+            return Article(entry.title, entry.path, content)
+        except Exception:
+            return None
 from pathlib import Path
 from threading import Lock
 from logger import logger
