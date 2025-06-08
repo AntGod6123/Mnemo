@@ -2,14 +2,16 @@ version: '3.9'
 
 services:
   backend:
-    build: https://github.com/AntGod6123/Mnemo.git#main:backend
+    build:
+      context: ./backend
     ports:
       - "8000:8000"
     volumes:
       - ./data:/app/data
 
   frontend:
-    build: https://github.com/AntGod6123/Mnemo.git#main:frontend
+    build:
+      context: ./frontend
     ports:
       - "3000:3000"
 
