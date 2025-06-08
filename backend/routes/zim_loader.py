@@ -50,17 +50,13 @@ class ZIMReader:
 from pathlib import Path
 from threading import Lock
 from logger import logger
+from routes.config import load_config
 
 ZIM_INDEX = {}
 ZIM_META = []
 ZIM_LOCK = Lock()
-CONFIG_PATH = "./data/config.json"
 CACHE_PATH = "./cache/zim_index.json"
 FTS_DB_PATH = "./cache/search_index.db"
-
-def load_config():
-    with open(CONFIG_PATH) as f:
-        return json.load(f)
 
 def save_cache(meta):
     os.makedirs("./cache", exist_ok=True)

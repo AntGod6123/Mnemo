@@ -3,7 +3,6 @@ from fastapi import APIRouter, Request, HTTPException
 from pydantic import BaseModel
 import json
 import os
-from routes.zim_loader import load_zim_files
 import argostranslate.package as argos_pkg
 from .auth import get_session_username
 from logger import logger
@@ -45,6 +44,7 @@ def get_config():
 
 @router.post("/admin/config")
 def update_config(config: ConfigModel, request: Request):
+    from routes.zim_loader import load_zim_files
     session = get_session_username(request)
     if session != "admin":
         raise HTTPException(status_code=403, detail="Admin access required")
