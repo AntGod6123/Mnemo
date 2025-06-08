@@ -21,7 +21,8 @@ RUN pip install --no-cache-dir \
     requests \
     PyMuPDF \
     pdfkit \
-    python-dotenv
+    python-dotenv \
+    itsdangerous
 
 # Preload common Argos Translate packages
 RUN python - <<'EOF'
