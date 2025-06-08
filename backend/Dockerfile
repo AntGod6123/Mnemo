@@ -26,10 +26,9 @@ RUN pip install --no-cache-dir \
 # Preload common Argos Translate packages
 RUN python - <<'EOF'
 import argostranslate.package as pkg
-pkgs = [p for p in pkg.get_available_packages() if p.from_code in ("en", "es", "fr") or p.to_code in ("en", "es", "fr")]
-for p in pkgs:
-    path = pkg.download_package(p)
-    pkg.install_from_path(path)
+pkg.update_package_index()
+for package in pkg.get_available_packages():
+    package.install()
 EOF
 
 EXPOSE 8000
