@@ -12,6 +12,16 @@ export default function UserMenu() {
   const [loginPass, setLoginPass] = useState('');
   const [error, setError] = useState('');
 
+  const exportPdf = () => {
+    const tab = window.activeZimTab;
+    if (tab) {
+      window.open(`/article/${tab.zimId}/${tab.path}/pdf`, '_blank');
+      setOpen(false);
+    } else {
+      alert('No page selected');
+    }
+  };
+
   const fetchStatus = async () => {
     const res = await fetch('/auth/status', { credentials: 'include' });
     if (res.ok) {
@@ -78,6 +88,12 @@ export default function UserMenu() {
                 Logout
               </button>
               <button
+                onClick={exportPdf}
+                className="block w-full px-4 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700"
+              >
+                Export PDF
+              </button>
+              <button
                 onClick={() => setShowAbout(true)}
                 className="block w-full px-4 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700"
               >
@@ -109,6 +125,13 @@ export default function UserMenu() {
                 className="w-full mt-2 text-left text-sm hover:underline"
               >
                 About
+              </button>
+              <button
+                type="button"
+                onClick={exportPdf}
+                className="w-full mt-2 text-left text-sm hover:underline"
+              >
+                Export PDF
               </button>
             </form>
           )}

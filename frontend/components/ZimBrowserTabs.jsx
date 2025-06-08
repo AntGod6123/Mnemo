@@ -10,19 +10,28 @@ export default function ZimBrowserTabs() {
 
   const openTab = (zimId, path, title) => {
     const id = `${zimId}:${path}`;
-    if (!tabs.find(t => t.id === id)) {
-      setTabs([...tabs, { id, zimId, path, title }]);
+    const existing = tabs.find(t => t.id === id);
+    if (!existing) {
+      const tab = { id, zimId, path, title };
+      setTabs([...tabs, tab]);
+      window.activeZimTab = tab;
+    } else {
+      window.activeZimTab = existing;
     }
     setActive(id);
   };
+  // expose opener globally for other components
+  window.openZimTab = openTab;
 
   const closeTab = (id) => {
     setTabs(tabs.filter(t => t.id !== id));
     if (active === id && tabs.length > 1) {
       const next = tabs.find(t => t.id !== id);
       setActive(next.id);
+      window.activeZimTab = next;
     } else if (tabs.length === 1) {
       setActive(null);
+      window.activeZimTab = null;
     }
   };
 
@@ -56,7 +65,10 @@ export default function ZimBrowserTabs() {
           <div
             key={tab.id}
             className={`px-4 py-2 cursor-pointer ${tab.id === active ? 'bg-gray-300 dark:bg-gray-600' : 'bg-gray-100 dark:bg-gray-800'}`}
-            onClick={() => setActive(tab.id)}
+            onClick={() => {
+              setActive(tab.id);
+              window.activeZimTab = tab;
+            }}
             onContextMenu={(e) => {
               e.preventDefault();
               window.open(`/article/${tab.zimId}/${tab.path}`, '_blank');
