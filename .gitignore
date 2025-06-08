@@ -1,0 +1,25 @@
+# Python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Node modules and build outputs
+node_modules/
+dist/
+build/
+
+# Environment files and caches
+.cache/
+.env
+
+# Virtual environments
+venv/
+
+# MacOS and IDE files
+.DS_Store
+.idea/
+
+# Log files
+*.log
+
