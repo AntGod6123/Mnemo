@@ -21,7 +21,7 @@ class ConfigModel(BaseModel):
 def load_config():
     if not os.path.exists(CONFIG_PATH):
         return {
-            "zim_dir": "/data/zim",
+            "zim_dir": "/app/data/zim",
             "llm_enabled": False,
             "llm_url": "http://localhost:11434/api/generate",
             "llm_api_key": "",

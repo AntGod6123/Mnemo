@@ -55,6 +55,12 @@ Argos Translate models for common languages are installed automatically during
 the build. You can refresh them at any time from the **Server Settings** dialog
 by clicking <kbd>Update Argos Models</kbd>.
 
+### Adding ZIM Files
+
+Place your ZIM archives in `./data/zim` on the host. This folder is mounted into
+the backend container at `/app/data/zim`. Any `.zim` files you drop there will
+be loaded automatically when the stack starts.
+
 ### Enabling LLM Features
 
 Open the admin panel and supply the URL and API key of your own LLM service.

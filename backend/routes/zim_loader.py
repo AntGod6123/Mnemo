@@ -110,7 +110,7 @@ def load_zim_files():
         ZIM_META.clear()
 
         config = load_config()
-        zim_dir = Path(config.get("zim_dir", "/data/zim"))
+        zim_dir = Path(config.get("zim_dir", "/app/data/zim"))
         overrides = config.get("zim_overrides", {})
 
         if not zim_dir.exists():
