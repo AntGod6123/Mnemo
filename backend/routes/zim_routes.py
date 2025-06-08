@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException
 from fastapi.responses import HTMLResponse, StreamingResponse
 import io
 import pdfkit
+import re
 from routes.zim_loader import get_zim_metadata, get_article
 
 router = APIRouter()
@@ -15,7 +16,11 @@ def list_zims():
 def get_article_html(zim_id: str, path: str):
     article = get_article(zim_id, path)
     if article:
-        return HTMLResponse(article.content or "")
+        sanitized = re.sub(r"<script.*?>.*?</script>", "", article.content or "", flags=re.DOTALL | re.IGNORECASE)
+        return HTMLResponse(
+            sanitized,
+            headers={"Content-Security-Policy": "default-src 'self'"}
+        )
     raise HTTPException(status_code=404, detail="Article not found")
 
 
