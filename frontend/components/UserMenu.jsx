@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { apiFetch, API_BASE } from '../api';
 import { UserCircle } from 'lucide-react';
 import PluginManager from './PluginManager';
 
@@ -23,7 +24,7 @@ export default function UserMenu() {
   };
 
   const fetchStatus = async () => {
-    const res = await fetch('/auth/status', { credentials: 'include' });
+    const res = await apiFetch('/auth/status', { credentials: 'include' });
     if (res.ok) {
       const data = await res.json();
       setLoggedIn(data.logged_in);
@@ -40,7 +41,7 @@ export default function UserMenu() {
 
   const login = async (e) => {
     e.preventDefault();
-    const res = await fetch('/auth/login', {
+    const res = await apiFetch('/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
@@ -59,7 +60,7 @@ export default function UserMenu() {
   };
 
   const logout = async () => {
-    await fetch('/auth/logout', { method: 'POST', credentials: 'include' });
+    await apiFetch('/auth/logout', { method: 'POST', credentials: 'include' });
     setLoggedIn(false);
     setUsername('');
     setOpen(false);

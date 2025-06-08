@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { apiFetch } from '../api';
 
 export default function LLMChatPanel() {
   const [chat, setChat] = useState([]);
@@ -7,7 +8,7 @@ export default function LLMChatPanel() {
   const [llmEnabled, setLlmEnabled] = useState(false);
 
   useEffect(() => {
-    fetch('/admin/config')
+    apiFetch('/admin/config')
       .then(res => res.json())
       .then(cfg => setLlmEnabled(cfg.llm_enabled));
   }, []);
@@ -15,7 +16,7 @@ export default function LLMChatPanel() {
   const sendMessage = async () => {
     if (!llmEnabled) return;
     setLoading(true);
-    const res = await fetch('/llm/query', {
+    const res = await apiFetch('/llm/query', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ query: input })

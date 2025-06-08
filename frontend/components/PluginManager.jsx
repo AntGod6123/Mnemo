@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { apiFetch } from '../api';
 
 export default function PluginManager() {
   const [zimDir, setZimDir] = useState('');
@@ -9,7 +10,7 @@ export default function PluginManager() {
   const [overridesText, setOverridesText] = useState('');
 
   useEffect(() => {
-    fetch('/admin/config')
+    apiFetch('/admin/config')
       .then(res => res.json())
       .then(data => {
         setZimDir(data.zim_dir || '');
@@ -21,7 +22,7 @@ export default function PluginManager() {
   }, []);
 
   const saveConfig = async () => {
-    const res = await fetch('/admin/config', {
+    const res = await apiFetch('/admin/config', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
@@ -38,7 +39,7 @@ export default function PluginManager() {
   };
 
   const updateArgos = async () => {
-    const res = await fetch('/admin/update-argos', {
+    const res = await apiFetch('/admin/update-argos', {
       method: 'POST',
       credentials: 'include'
     });
