@@ -61,6 +61,15 @@ provided.
 export SECRET_KEY=your-secret-key
 ```
 
+### Default Admin Login
+
+An initial administrator account is preconfigured in `data/users.json`:
+
+- **Username**: `admin`
+- **Password**: `admin123`
+
+Edit this file and restart the backend if you need to change the credentials.
+
 Argos Translate models for common languages are installed automatically during
 the build. You can refresh them at any time from the **Server Settings** dialog
 by clicking <kbd>Update Argos Models</kbd>.
