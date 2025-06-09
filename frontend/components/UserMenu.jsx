@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { apiFetch, API_BASE } from '../api';
-import { UserCircle } from 'lucide-react';
+import { UserCircle, Eye, EyeOff } from 'lucide-react';
 import PluginManager from './PluginManager';
 
 export default function UserMenu() {
@@ -11,6 +11,7 @@ export default function UserMenu() {
   const [showAbout, setShowAbout] = useState(false);
   const [loginUser, setLoginUser] = useState('');
   const [loginPass, setLoginPass] = useState('');
+  const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState('');
 
   const exportPdf = () => {
@@ -109,13 +110,22 @@ export default function UserMenu() {
                 value={loginUser}
                 onChange={e => setLoginUser(e.target.value)}
               />
-              <input
-                type="password"
-                className="w-full p-1 border rounded dark:bg-gray-700"
-                placeholder="Password"
-                value={loginPass}
-                onChange={e => setLoginPass(e.target.value)}
-              />
+              <div className="relative">
+                <input
+                  type={showPass ? 'text' : 'password'}
+                  className="w-full p-1 border rounded dark:bg-gray-700 pr-8"
+                  placeholder="Password"
+                  value={loginPass}
+                  onChange={e => setLoginPass(e.target.value)}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPass(!showPass)}
+                  className="absolute inset-y-0 right-0 flex items-center px-2"
+                >
+                  {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
               {error && <div className="text-red-600 text-sm">{error}</div>}
               <button type="submit" className="w-full bg-blue-600 text-white rounded px-2 py-1">
                 Login
