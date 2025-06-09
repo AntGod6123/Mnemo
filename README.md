@@ -61,6 +61,17 @@ provided.
 export SECRET_KEY=your-secret-key
 ```
 
+#### Overriding the Backend URL
+
+When building the frontend you may point the React app at a different backend.
+Set `VITE_BACKEND_URL` before running the build command:
+
+```bash
+VITE_BACKEND_URL=http://<host>:<port> npm run build
+```
+
+The provided URL becomes the API endpoint that the browser communicates with.
+
 ### Default Admin Login
 
 An initial administrator account is preconfigured in `data/users.json`:
