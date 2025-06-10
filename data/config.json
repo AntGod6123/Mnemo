@@ -1,8 +1,13 @@
 {
   "zim_dir": "/app/data/zim",
+  "extra_zim_dirs": [],
+  "icon_dir": "./data/icons",
   "llm_enabled": false,
   "llm_url": "http://localhost:11434/api/generate",
   "llm_api_key": "",
   "llm_model": "llama3",
-  "zim_overrides": {}
+  "ldap_url": null,
+  "sso_url": null,
+  "zim_overrides": {},
+  "session_timeout": 30
 }

@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { apiFetch } from '../api';
 
-export default function SearchPanel({ onOpenTab }) {
+export default function SearchPanel({ onSearch, incremental }) {
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState([]);
-  const [answer, setAnswer] = useState('');
   const [llmEnabled, setLlmEnabled] = useState(false);
 
   useEffect(() => {
@@ -14,10 +12,7 @@ export default function SearchPanel({ onOpenTab }) {
   }, []);
 
   const runSearch = async () => {
-    const res = await apiFetch(`/search?q=${encodeURIComponent(query)}`);
-    const data = await res.json();
-    setResults(data.results || []);
-
+    let answer = '';
     if (llmEnabled) {
       const llm = await apiFetch('/llm/query', {
         method: 'POST',
@@ -25,10 +20,27 @@ export default function SearchPanel({ onOpenTab }) {
         body: JSON.stringify({ query })
       });
       const ai = await llm.json();
-      setAnswer(ai.answer || '');
-    } else {
-      setAnswer('');
+      answer = ai.answer || '';
     }
+
+    if (incremental) {
+      if (onSearch) onSearch(query, [], answer);
+      const es = new EventSource(`/search/stream?q=${encodeURIComponent(query)}`);
+      let results = [];
+      es.onmessage = (e) => {
+        if (e.data === 'done') return;
+        const item = JSON.parse(e.data);
+        results.push(item);
+        if (onSearch) onSearch(query, [...results], answer);
+      };
+      es.addEventListener('end', () => es.close());
+      es.onerror = () => es.close();
+      return;
+    }
+
+    const res = await apiFetch(`/search?q=${encodeURIComponent(query)}`);
+    const data = await res.json();
+    if (onSearch) onSearch(query, data.results || [], answer);
   };
 
   return (
@@ -45,27 +57,6 @@ export default function SearchPanel({ onOpenTab }) {
           Search
         </button>
       </div>
-      {llmEnabled && answer && (
-        <div className="p-4 bg-yellow-100 dark:bg-yellow-800 rounded mb-4">
-          <strong>AI Summary:</strong> {answer}
-        </div>
-      )}
-      <ul>
-        {results.map((r, i) => (
-          <li key={i} className="mb-2">
-            <a
-              href="#"
-              onClick={e => {
-                e.preventDefault();
-                onOpenTab(r.zim_id, r.path, r.title);
-              }}
-              className="text-blue-600 dark:text-blue-300 hover:underline"
-            >
-              {r.title}
-            </a>
-          </li>
-        ))}
-      </ul>
     </div>
   );
 }

@@ -1,25 +1,29 @@
 import React, { useEffect, useState } from 'react';
 import SearchPanel from '../components/SearchPanel';
-import UserMenu from '../components/UserMenu';
+import Header from '../components/Header';
 import { apiFetch } from '../api';
 import { BookOpenIcon } from 'lucide-react';
 
-export default function Home({ onOpenTab }) {
+export default function Home({ onSearch }) {
   const [zimFiles, setZimFiles] = useState([]);
 
-  useEffect(() => {
+  const loadZims = () => {
     apiFetch('/zim/list')
       .then(res => res.json())
       .then(data => setZimFiles(data.zims || []));
+  };
+
+  useEffect(() => {
+    loadZims();
+    const handler = () => loadZims();
+    window.addEventListener('zim-updated', handler);
+    return () => window.removeEventListener('zim-updated', handler);
   }, []);
 
   return (
     <div className="p-4 max-w-4xl mx-auto">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">📚 Offline Browser</h1>
-        <UserMenu />
-      </div>
-      <SearchPanel onOpenTab={onOpenTab} />
+      <Header onHome={() => {}} />
+      <SearchPanel onSearch={onSearch} />
 
       <div className="mt-10">
         <h2 className="text-lg font-semibold mb-2">Browse by Collection</h2>

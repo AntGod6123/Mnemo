@@ -4,7 +4,9 @@ import json
 import os
 import bcrypt
 from itsdangerous import URLSafeSerializer, BadSignature
+import time
 from logger import logger
+from routes.config import load_config
 
 router = APIRouter()
 
@@ -17,17 +19,25 @@ if not SECRET_KEY:
 serializer = URLSafeSerializer(SECRET_KEY, salt="mnemo-session")
 
 
-def create_token(username: str) -> str:
-    """Create a signed session token for the given user."""
-    return serializer.dumps(username)
+def create_token(username: str, minutes: int) -> str:
+    """Create a signed session token for the given user with expiry."""
+    exp = int(time.time()) + minutes * 60
+    return serializer.dumps({"u": username, "exp": exp})
 
 
 def decode_token(token: str) -> str | None:
-    """Return username if token is valid else None."""
+    """Return username if token is valid and not expired else None."""
     try:
-        return serializer.loads(token)
+        data = serializer.loads(token)
     except BadSignature:
         return None
+    if isinstance(data, str):
+        # old token without expiry
+        return data
+    exp = data.get("exp")
+    if exp and time.time() > exp:
+        return None
+    return data.get("u")
 
 
 def get_session_username(request: Request) -> str | None:
@@ -37,6 +47,11 @@ def get_session_username(request: Request) -> str | None:
     return decode_token(token)
 
 class LoginRequest(BaseModel):
+    username: str
+    password: str
+
+
+class AddUserRequest(BaseModel):
     username: str
     password: str
 
@@ -51,11 +66,15 @@ def login(data: LoginRequest, response: Response):
     for user in users:
         if user["username"] == data.username:
             if bcrypt.checkpw(data.password.encode(), user["password"].encode()):
-                token = create_token(user["username"])
-                response.set_cookie("mnemo_session", token, httponly=True)
-                logger.info(f"User {data.username} logged in")
+                cfg = load_config()
+                minutes = cfg.get("session_timeout", 30)
+                token = create_token(user["username"], minutes)
+                response.set_cookie(
+                    "mnemo_session", token, httponly=True, max_age=minutes * 60
+                )
+                logger.info("User logged in")
                 return {"message": "Login successful", "username": user["username"]}
-    logger.warning(f"Failed login attempt for {data.username}")
+    logger.warning("Failed login attempt")
     raise HTTPException(status_code=401, detail="Invalid credentials")
 
 @router.post("/auth/logout")
@@ -70,3 +89,27 @@ def status(request: Request):
     if username:
         return {"logged_in": True, "username": username}
     return {"logged_in": False}
+
+
+@router.post("/admin/add-user")
+def add_user(data: AddUserRequest, request: Request):
+    session = get_session_username(request)
+    if session != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+
+    users = []
+    if os.path.exists(USERS_FILE):
+        with open(USERS_FILE) as f:
+            users = json.load(f)
+
+    for user in users:
+        if user["username"] == data.username:
+            raise HTTPException(status_code=400, detail="User already exists")
+
+    hashed = bcrypt.hashpw(data.password.encode(), bcrypt.gensalt()).decode()
+    users.append({"username": data.username, "password": hashed})
+    with open(USERS_FILE, "w") as f:
+        json.dump(users, f, indent=2)
+
+    logger.info(f"Added user {data.username}")
+    return {"message": "User added"}
