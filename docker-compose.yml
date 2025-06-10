@@ -9,6 +9,7 @@ services:
       - ZIM_DIR=/app/data/zim
       - EXTRA_ZIM_DIRS=
       - SESSION_TIMEOUT=30
+      - SECRET_KEY=secret
 
   frontend:
     build: ./frontend
