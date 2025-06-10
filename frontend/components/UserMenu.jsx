@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { apiFetch, API_BASE } from '../api';
 import { UserCircle, Eye, EyeOff } from 'lucide-react';
 import PluginManager from './PluginManager';
 
 export default function UserMenu() {
   const [open, setOpen] = useState(false);
+  const buttonRef = useRef(null);
+  const menuRef = useRef(null);
   const [loggedIn, setLoggedIn] = useState(false);
   const [username, setUsername] = useState('');
   const [showSettings, setShowSettings] = useState(false);
@@ -40,6 +42,22 @@ export default function UserMenu() {
     fetchStatus();
   }, []);
 
+  useEffect(() => {
+    if (!open) return;
+    const handle = (e) => {
+      if (
+        menuRef.current &&
+        !menuRef.current.contains(e.target) &&
+        buttonRef.current &&
+        !buttonRef.current.contains(e.target)
+      ) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handle);
+    return () => document.removeEventListener('mousedown', handle);
+  }, [open]);
+
   const login = async (e) => {
     e.preventDefault();
     const res = await apiFetch('/auth/login', {
@@ -56,6 +74,7 @@ export default function UserMenu() {
       setLoginPass('');
       setError('');
     } else {
+      alert('Invalid credentials');
       setError('Invalid credentials');
     }
   };
@@ -69,11 +88,11 @@ export default function UserMenu() {
 
   return (
     <div className="relative inline-block text-left">
-      <button onClick={() => setOpen(!open)} className="p-2">
+      <button ref={buttonRef} onClick={() => setOpen(!open)} className="p-2">
         <UserCircle size={24} />
       </button>
       {open && (
-        <div className="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-md bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+        <div ref={menuRef} className="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-md bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
           {loggedIn ? (
             <div className="py-1">
               <div className="px-4 py-2 text-sm">Logged in as {username}</div>
@@ -150,7 +169,12 @@ export default function UserMenu() {
       )}
 
       {showSettings && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
+          onClick={e => {
+            if (e.target === e.currentTarget) setShowSettings(false);
+          }}
+        >
           <div className="bg-white dark:bg-gray-800 p-4 rounded w-96 max-h-[90vh] overflow-auto">
             <PluginManager />
             <button
@@ -164,7 +188,12 @@ export default function UserMenu() {
       )}
 
       {showAbout && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
+          onClick={e => {
+            if (e.target === e.currentTarget) setShowAbout(false);
+          }}
+        >
           <div className="bg-white dark:bg-gray-800 p-4 rounded w-80">
             <h2 className="text-lg font-bold mb-2">About</h2>
             <p className="mb-4">Mnemo is an offline ZIM browser with optional AI-powered search.</p>

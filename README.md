@@ -61,14 +61,23 @@ provided.
 export SECRET_KEY=your-secret-key
 ```
 
-#### Overriding the Backend URL
-
-When building the frontend you may point the React app at a different backend.
-Set `VITE_BACKEND_URL` before running the build command:
+You can also override where ZIM archives are read from:
 
 ```bash
-VITE_BACKEND_URL=http://<host>:<port> npm run build
+export ZIM_DIR=/app/data/zim
+export EXTRA_ZIM_DIRS=/mnt/zims:/more/zims
+export SESSION_TIMEOUT=30
 ```
+
+`SESSION_TIMEOUT` sets how many minutes an idle login remains valid. If not
+specified, the default is 30 minutes.
+
+#### Building the Frontend
+
+Running `npm run build` will now prompt you for the backend host IP address. The
+script lists detected local IPs and sets `VITE_BACKEND_URL` accordingly before
+invoking the Vite build. You can skip the prompt by setting the `HOST_IP`
+environment variable or by calling `npm run build:actual` directly.
 
 The provided URL becomes the API endpoint that the browser communicates with.
 
@@ -91,11 +100,25 @@ Place your ZIM archives in `./data/zim` on the host. This folder is mounted into
 the backend container at `/app/data/zim`. Any `.zim` files you drop there will
 be loaded automatically when the stack starts.
 
+You can mount additional host folders and have Mnemo read ZIMs from them by
+setting the `EXTRA_ZIM_DIRS` environment variable (use a colon-separated list
+inside the container). For example:
+
+```bash
+docker run -v /external/zims:/mnt/zims \
+  -e EXTRA_ZIM_DIRS=/mnt/zims mnemo-backend
+```
+
+The directories can also be configured in **Server Settings** under
+"Additional ZIM Directories".
+
 ### Enabling LLM Features
 
 Open the admin panel and supply the URL and API key of your own LLM service.
 Unchecking the option hides these fields and disables AI responses in the
-search interface.
+search interface. Searches now open a dedicated results page that lists
+matching articles and, when enabled, the LLM's response. Clicking a result
+opens that article in a new browser tab.
 
 ### Customizing Collections
 
@@ -126,4 +149,6 @@ To generate the production assets manually use:
 npm run build
 ```
 
-This command runs Tailwind through `postcss.config.js` so all utility classes compile correctly.
+You will be asked for the backend IP address unless the `HOST_IP` environment
+variable is already set. The command runs Tailwind through `postcss.config.js`
+so all utility classes compile correctly.

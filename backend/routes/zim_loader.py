@@ -106,41 +106,46 @@ def load_zim_files():
         ZIM_META.clear()
 
         config = load_config()
-        zim_dir = Path(config.get("zim_dir", "/app/data/zim"))
+        base_dir = Path(config.get("zim_dir", "/app/data/zim"))
+        extra_dirs = [Path(p) for p in config.get("extra_zim_dirs", [])]
         overrides = config.get("zim_overrides", {})
 
-        if not zim_dir.exists():
-            logger.error("ZIM directory not found")
-            return
+        dirs = [base_dir] + extra_dirs
+        missing = [d for d in dirs if not d.exists()]
+        for d in missing:
+            logger.error(f"ZIM directory not found: {d}")
 
         meta_cache = []
 
-        for zim_path in zim_dir.glob("*.zim"):
-            try:
-                reader = ZIMReader(str(zim_path))
-                # Build the FTS search index lazily and determine article count
-                count = rebuild_search_index(zim_path.name, reader)
+        for directory in dirs:
+            if not directory.exists():
+                continue
+            for zim_path in directory.glob("*.zim"):
+                try:
+                    reader = ZIMReader(str(zim_path))
+                    # Build the FTS search index lazily and determine article count
+                    count = rebuild_search_index(zim_path.name, reader)
 
-                over = overrides.get(zim_path.name, {})
-                zim_meta = {
-                    "file": zim_path.name,
-                    "title": over.get("title") or reader.title,
-                    "lang": reader.language,
-                    "count": count,
-                }
-                # Store only the reader and its metadata in memory
-                ZIM_INDEX[zim_path.name] = {
-                    "reader": reader,
-                    "meta": zim_meta,
-                }
-                if "image" in over:
-                    zim_meta["image"] = over["image"]
-                meta_cache.append(zim_meta)
-                ZIM_META.append(zim_meta)
+                    over = overrides.get(zim_path.name, {})
+                    zim_meta = {
+                        "file": zim_path.name,
+                        "title": over.get("title") or reader.title,
+                        "lang": reader.language,
+                        "count": count,
+                    }
+                    # Store only the reader and its metadata in memory
+                    ZIM_INDEX[zim_path.name] = {
+                        "reader": reader,
+                        "meta": zim_meta,
+                    }
+                    if "image" in over:
+                        zim_meta["image"] = over["image"]
+                    meta_cache.append(zim_meta)
+                    ZIM_META.append(zim_meta)
 
-                logger.info(f"Loaded {zim_path.name} with {count} articles")
-            except Exception as e:
-                logger.error(f"Failed to load {zim_path.name}: {e}")
+                    logger.info(f"Loaded {zim_path.name} with {count} articles")
+                except Exception as e:
+                    logger.error(f"Failed to load {zim_path.name}: {e}")
 
         save_cache(meta_cache)
 
