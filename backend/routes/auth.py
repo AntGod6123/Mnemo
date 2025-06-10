@@ -6,7 +6,6 @@ import bcrypt
 from itsdangerous import URLSafeSerializer, BadSignature
 import time
 from logger import logger
-from routes.config import load_config
 
 router = APIRouter()
 
@@ -57,6 +56,7 @@ class AddUserRequest(BaseModel):
 
 @router.post("/auth/login")
 def login(data: LoginRequest, response: Response):
+    from routes.config import load_config
     if not os.path.exists(USERS_FILE):
         raise HTTPException(status_code=401, detail="No users defined")
 
