@@ -4,9 +4,9 @@ FROM node:20 AS builder
 WORKDIR /app
 COPY . .
 
-ARG VITE_BACKEND_URL=http://backend:8000
-ENV VITE_BACKEND_URL=$VITE_BACKEND_URL
-RUN npm install && npm run build:actual
+ARG HOST_IP=""
+ENV HOST_IP=$HOST_IP
+RUN npm install && npm run build
 
 # Stage 2: Serve with NGINX
 FROM nginx:alpine

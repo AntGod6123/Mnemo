@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 const os = require('os');
+const dns = require('dns');
 const readline = require('readline');
 const { spawn } = require('child_process');
 
@@ -21,9 +22,19 @@ const rl = readline.createInterface({ input: process.stdin, output: process.stdo
 
 const ask = (q) => new Promise(res => rl.question(q, res));
 
+const lookupHostIp = () => new Promise(resolve => {
+  dns.lookup('host.docker.internal', (err, address) => {
+    if (!err && address) resolve(address);
+    else resolve(null);
+  });
+});
+
 (async () => {
   let ip = process.env.HOST_IP;
   if (!ip) {
+    ip = await lookupHostIp();
+  }
+  if (!ip && process.stdin.isTTY) {
     ip = (await ask('Enter backend host IP (default 127.0.0.1): ')).trim();
   }
   rl.close();
