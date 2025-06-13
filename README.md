@@ -61,11 +61,10 @@ provided.
 export SECRET_KEY=your-secret-key
 ```
 
-You can also override where ZIM archives are read from:
+You can override where ZIM archives are read from:
 
 ```bash
 export ZIM_DIR=/app/data/zim
-export EXTRA_ZIM_DIRS=/mnt/zims:/more/zims
 export SESSION_TIMEOUT=30
 ```
 
@@ -90,9 +89,8 @@ An initial administrator account is preconfigured in `data/users.json`:
 
 Edit this file and restart the backend if you need to change the credentials.
 
-Argos Translate models for common languages are installed automatically during
-the build. You can refresh them at any time from the **Server Settings** dialog
-by clicking <kbd>Update Argos Models</kbd>.
+Translation support is optional. Install the Argos Translate models from the
+**Server Settings** dialog by clicking <kbd>Install Translation</kbd>.
 
 ### Adding ZIM Files
 
@@ -100,17 +98,7 @@ Place your ZIM archives in `./data/zim` on the host. This folder is mounted into
 the backend container at `/app/data/zim`. Any `.zim` files you drop there will
 be loaded automatically when the stack starts.
 
-You can mount additional host folders and have Mnemo read ZIMs from them by
-setting the `EXTRA_ZIM_DIRS` environment variable (use a colon-separated list
-inside the container). For example:
-
-```bash
-docker run -v /external/zims:/mnt/zims \
-  -e EXTRA_ZIM_DIRS=/mnt/zims mnemo-backend
-```
-
-The directories can also be configured in **Server Settings** under
-"Additional ZIM Directories".
+Place additional ZIM archives in the configured `ZIM_DIR` folder and restart the backend to load them.
 
 ### Enabling LLM Features
 

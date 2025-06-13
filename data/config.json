@@ -1,6 +1,5 @@
 {
   "zim_dir": "/app/data/zim",
-  "extra_zim_dirs": [],
   "icon_dir": "./data/icons",
   "llm_enabled": false,
   "llm_url": "http://localhost:11434/api/generate",

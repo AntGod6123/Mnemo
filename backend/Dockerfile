@@ -24,14 +24,8 @@ RUN pip install --no-cache-dir \
     python-dotenv \
     itsdangerous
 
-# Preload common Argos Translate packages
-RUN python - <<'EOF'
-import argostranslate.package as pkg
-pkg.update_package_index()
-for package in pkg.get_available_packages():
-    package.install()
-EOF
+# Translation packages are installed on demand via the admin UI
 
 EXPOSE 8000
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
