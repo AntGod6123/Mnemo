@@ -6,15 +6,18 @@ import json
 import os
 import shutil
 import argostranslate.package as argos_pkg
+from threading import Thread
 from .auth import get_session_username
 from logger import logger
 
 CONFIG_PATH = "./data/config.json"
 router = APIRouter()
 
+# Track Argos installation progress
+ARGOS_PROGRESS = {"total": 0, "done": 0}
+
 class ConfigModel(BaseModel):
     zim_dir: str
-    extra_zim_dirs: list[str] = []
     icon_dir: str = "./data/icons"
     session_timeout: int = 30
     llm_enabled: bool = False
@@ -32,13 +35,11 @@ class ConfigUpdateRequest(ConfigModel):
 
 def load_config():
     env_zim = os.getenv("ZIM_DIR")
-    env_extra = os.getenv("EXTRA_ZIM_DIRS")
     env_icon = os.getenv("ICON_DIR")
     env_timeout = os.getenv("SESSION_TIMEOUT")
 
     defaults = {
         "zim_dir": env_zim or "/app/data/zim",
-        "extra_zim_dirs": [d for d in (env_extra.split(":")) if d] if env_extra else [],
         "icon_dir": env_icon or "./data/icons",
         "session_timeout": int(env_timeout) if env_timeout else 30,
         "llm_enabled": False,
@@ -61,13 +62,10 @@ def load_config():
     data.setdefault("ldap_url", None)
     data.setdefault("sso_url", None)
     data.setdefault("icon_dir", defaults["icon_dir"])
-    data.setdefault("extra_zim_dirs", defaults["extra_zim_dirs"])
     data.setdefault("session_timeout", 30)
 
     if env_zim:
         data["zim_dir"] = env_zim
-    if env_extra:
-        data["extra_zim_dirs"] = defaults["extra_zim_dirs"]
     if env_icon:
         data["icon_dir"] = env_icon
     if env_timeout:
@@ -96,7 +94,6 @@ def update_config(config: ConfigUpdateRequest, request: Request):
     create = data.pop("create_dirs")
 
     new_zim = data["zim_dir"]
-    new_extra = data.get("extra_zim_dirs", [])
     new_icon = data.get("icon_dir", "./data/icons")
 
     if move:
@@ -110,18 +107,6 @@ def update_config(config: ConfigUpdateRequest, request: Request):
                 if file.endswith(".zim"):
                     shutil.move(os.path.join(current["zim_dir"], file), os.path.join(new_zim, file))
 
-        cur_extra = current.get("extra_zim_dirs", [])
-        for idx, d in enumerate(new_extra):
-            if not os.path.exists(d):
-                if create:
-                    os.makedirs(d, exist_ok=True)
-                else:
-                    raise HTTPException(status_code=400, detail="New ZIM directory missing")
-            if idx < len(cur_extra) and cur_extra[idx] != d:
-                if os.path.exists(cur_extra[idx]):
-                    for f in os.listdir(cur_extra[idx]):
-                        if f.endswith(".zim"):
-                            shutil.move(os.path.join(cur_extra[idx], f), os.path.join(d, f))
 
         if current.get("icon_dir", "./data/icons") != new_icon:
             if not os.path.exists(new_icon):
@@ -145,15 +130,33 @@ def update_argos(request: Request):
     session = get_session_username(request)
     if session != "admin":
         raise HTTPException(status_code=403, detail="Admin access required")
-    try:
-        argos_pkg.update_package_index()
-        for p in argos_pkg.get_available_packages():
-            p.install()
-        logger.info("Argos packages updated")
-        return {"message": "Argos packages updated"}
-    except Exception as e:
-        logger.error(f"Argos update failed: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+    def run_install():
+        try:
+            argos_pkg.update_package_index()
+            packages = argos_pkg.get_available_packages()
+            ARGOS_PROGRESS["total"] = len(packages)
+            ARGOS_PROGRESS["done"] = 0
+            for p in packages:
+                p.install()
+                ARGOS_PROGRESS["done"] += 1
+            logger.info("Argos packages updated")
+        except Exception as e:
+            logger.error(f"Argos update failed: {e}")
+            ARGOS_PROGRESS["total"] = 0
+            ARGOS_PROGRESS["done"] = 0
+
+    Thread(target=run_install, daemon=True).start()
+    return {"message": "Argos installation started"}
+
+
+@router.get("/admin/argos-progress")
+def argos_progress():
+    total = ARGOS_PROGRESS.get("total", 0)
+    done = ARGOS_PROGRESS.get("done", 0)
+    if not total:
+        return {"progress": 100}
+    percent = int(done * 100 / total)
+    return {"progress": percent}
 
 
 @router.post("/admin/upload-icon")

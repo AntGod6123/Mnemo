@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import SearchPanel from '../components/SearchPanel';
 import Header from '../components/Header';
 import { apiFetch } from '../api';
-import { BookOpenIcon } from 'lucide-react';
+import logo from '../../logo.png';
 
 export default function Home({ onSearch }) {
   const [zimFiles, setZimFiles] = useState([]);
@@ -40,7 +40,7 @@ export default function Home({ onSearch }) {
                 <img src={zim.image} alt="" className="w-full h-24 object-contain mb-2" />
               ) : (
                 <div className="flex items-center gap-2 mb-2">
-                  <BookOpenIcon size={20} />
+                  <img src={logo} alt="logo" className="w-6 h-6" />
                   <span className="font-medium truncate">{zim.title || zim.file}</span>
                 </div>
               )}

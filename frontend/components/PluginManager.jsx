@@ -3,10 +3,8 @@ import { apiFetch } from '../api';
 
 export default function PluginManager() {
   const [zimDir, setZimDir] = useState('');
-  const [extraDirs, setExtraDirs] = useState('');
   const [iconDir, setIconDir] = useState('');
   const [origZimDir, setOrigZimDir] = useState('');
-  const [origExtraDirs, setOrigExtraDirs] = useState('');
   const [origIconDir, setOrigIconDir] = useState('');
   const [sessionTimeout, setSessionTimeout] = useState(30);
   const [origSessionTimeout, setOrigSessionTimeout] = useState(30);
@@ -21,6 +19,7 @@ export default function PluginManager() {
   const [newUserPass, setNewUserPass] = useState('');
   const [message, setMessage] = useState('');
   const [logs, setLogs] = useState('');
+  const [argosProgress, setArgosProgress] = useState(null);
 
   useEffect(() => {
     apiFetch('/admin/config')
@@ -30,9 +29,6 @@ export default function PluginManager() {
         setOrigZimDir(data.zim_dir || '');
         setIconDir(data.icon_dir || '');
         setOrigIconDir(data.icon_dir || '');
-        const extras = (data.extra_zim_dirs || []).join(',');
-        setExtraDirs(extras);
-        setOrigExtraDirs(extras);
         setSessionTimeout(data.session_timeout || 30);
         setOrigSessionTimeout(data.session_timeout || 30);
         setLlmEnabled(data.llm_enabled || false);
@@ -48,11 +44,10 @@ export default function PluginManager() {
   }, []);
 
   const saveConfig = async () => {
-    const move = (zimDir !== origZimDir) || (iconDir !== origIconDir) || (extraDirs !== origExtraDirs);
+    const move = (zimDir !== origZimDir) || (iconDir !== origIconDir);
 
     const body = {
       zim_dir: zimDir,
-      extra_zim_dirs: extraDirs.split(',').map(s => s.trim()).filter(Boolean),
       icon_dir: iconDir,
       llm_enabled: llmEnabled,
       llm_url: llmUrl,
@@ -95,7 +90,6 @@ export default function PluginManager() {
       setMessage(result.message || 'Saved');
       setOrigZimDir(zimDir);
       setOrigIconDir(iconDir);
-      setOrigExtraDirs(extraDirs);
       setOrigSessionTimeout(sessionTimeout);
       fetch('/zim/list').then(r => r.json()).then(d => {
         setZims(d.zims || []);
@@ -107,12 +101,21 @@ export default function PluginManager() {
   };
 
   const updateArgos = async () => {
+    setArgosProgress(0);
     const res = await apiFetch('/admin/update-argos', {
       method: 'POST',
       credentials: 'include'
     });
-    const data = await res.json();
-    setMessage(data.message || 'Update complete');
+    await res.json();
+    const interval = setInterval(async () => {
+      const r = await apiFetch('/admin/argos-progress');
+      const d = await r.json();
+      setArgosProgress(d.progress);
+      if (d.progress >= 100) {
+        clearInterval(interval);
+        setMessage('Installation complete');
+      }
+    }, 1000);
   };
 
   const loadLogs = async () => {
@@ -147,14 +150,6 @@ export default function PluginManager() {
           className="w-full p-2 border rounded dark:bg-gray-800 dark:text-white"
           value={zimDir}
           onChange={e => setZimDir(e.target.value)}
-        />
-      </div>
-      <div className="mb-4">
-        <label className="block mb-1">Additional ZIM Directories (comma separated)</label>
-        <input
-          className="w-full p-2 border rounded dark:bg-gray-800 dark:text-white"
-          value={extraDirs}
-          onChange={e => setExtraDirs(e.target.value)}
         />
       </div>
       <div className="mb-4">
@@ -312,8 +307,16 @@ export default function PluginManager() {
           onClick={updateArgos}
           className="px-4 py-2 bg-green-600 text-white rounded"
         >
-          Update Argos Models
+          Install Translation
         </button>
+        {argosProgress !== null && (
+          <div className="w-full bg-gray-200 rounded h-2 mt-2">
+            <div
+              className="bg-green-600 h-2 rounded"
+              style={{ width: `${argosProgress}%` }}
+            ></div>
+          </div>
+        )}
         <button
           onClick={loadLogs}
           className="px-4 py-2 bg-gray-600 text-white rounded"

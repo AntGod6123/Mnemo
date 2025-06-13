@@ -107,13 +107,11 @@ def load_zim_files():
 
         config = load_config()
         base_dir = Path(config.get("zim_dir", "/app/data/zim"))
-        extra_dirs = [Path(p) for p in config.get("extra_zim_dirs", [])]
         overrides = config.get("zim_overrides", {})
 
-        dirs = [base_dir] + extra_dirs
-        missing = [d for d in dirs if not d.exists()]
-        for d in missing:
-            logger.error(f"ZIM directory not found: {d}")
+        dirs = [base_dir]
+        if not base_dir.exists():
+            logger.error(f"ZIM directory not found: {base_dir}")
 
         meta_cache = []
 
