@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import SearchPanel from '../components/SearchPanel';
 import Header from '../components/Header';
 import { apiFetch } from '../api';
-import logo from '../../logo.png';
+import logo from '../logo.png';
 
 export default function Home({ onSearch }) {
   const [zimFiles, setZimFiles] = useState([]);
