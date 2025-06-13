@@ -73,10 +73,10 @@ specified, the default is 30 minutes.
 
 #### Building the Frontend
 
-Running `npm run build` will now prompt you for the backend host IP address. The
-script lists detected local IPs and sets `VITE_BACKEND_URL` accordingly before
-invoking the Vite build. You can skip the prompt by setting the `HOST_IP`
-environment variable or by calling `npm run build:actual` directly.
+Running `npm run build` attempts to detect the host IP automatically using the
+`host.docker.internal` DNS entry. If detection fails and a TTY is available, the
+script prompts for the backend IP. You can also set the `HOST_IP` environment
+variable or call `npm run build:actual` directly to skip detection.
 
 The provided URL becomes the API endpoint that the browser communicates with.
 
@@ -137,6 +137,6 @@ To generate the production assets manually use:
 npm run build
 ```
 
-You will be asked for the backend IP address unless the `HOST_IP` environment
-variable is already set. The command runs Tailwind through `postcss.config.js`
-so all utility classes compile correctly.
+If automatic detection fails, the script falls back to an interactive prompt
+unless `HOST_IP` is already defined. The command runs Tailwind through
+`postcss.config.js` so all utility classes compile correctly.
