@@ -19,7 +19,6 @@ if (ips.length) {
 }
 
 const fs = require('fs');
-const { spawnSync } = require('child_process');
 
 const getGatewayIp = () => {
   try {
@@ -38,16 +37,6 @@ const getGatewayIp = () => {
   return null;
 };
 
-const getHostnameIp = () => {
-  try {
-    const { stdout, status } = spawnSync('sh', ['-c', "hostname -I | awk '{print $1}'"], { encoding: 'utf8' });
-    if (status === 0) {
-      const ip = stdout.trim().split(/\s+/)[0];
-      if (ip) return ip;
-    }
-  } catch (_) {}
-  return null;
-};
 
 const gatewayIp = getGatewayIp();
 if (gatewayIp && !ips.includes(gatewayIp)) {
@@ -71,14 +60,20 @@ const lookupHostIp = () => new Promise(resolve => {
     ip = await lookupHostIp();
   }
   if (!ip) {
-    ip = getHostnameIp();
-  }
-  if (!ip) {
     ip = gatewayIp;
   }
-  if (!ip && process.stdin.isTTY) {
-    ip = (await ask('Enter backend host IP (default 127.0.0.1): ')).trim();
+
+  if (process.stdin.isTTY) {
+    if (ip) {
+      const ans = (await ask(`Use detected host IP ${ip}? (Y/n): `)).trim().toLowerCase();
+      if (ans && ans.startsWith('n')) {
+        ip = (await ask('Enter backend host IP: ')).trim();
+      }
+    } else {
+      ip = (await ask('Enter backend host IP (default 127.0.0.1): ')).trim();
+    }
   }
+
   rl.close();
   if (!ip) ip = '127.0.0.1';
   const url = `http://${ip}:8000`;
