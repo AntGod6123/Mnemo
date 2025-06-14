@@ -70,7 +70,7 @@ const lookupHostIp = () => new Promise(resolve => {
         ip = (await ask('Enter backend host IP: ')).trim();
       }
     } else {
-      ip = (await ask('Enter backend host IP (default 127.0.0.1): ')).trim();
+      ip = (await ask('Enter backend host IP: ')).trim();
     }
   }
 
