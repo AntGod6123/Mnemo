@@ -74,10 +74,11 @@ specified, the default is 30 minutes.
 #### Building the Frontend
 
 Running `npm run build` attempts to detect the host IP automatically using the
-`host.docker.internal` DNS entry or by executing `hostname -I | awk '{print $1}'`.
-If detection fails and a TTY is available, the script prompts for the backend IP.
-You can also set the `HOST_IP` environment variable or call `npm run build:actual`
-directly to skip detection.
+`host.docker.internal` DNS entry or by reading the container's default gateway.
+The detected address is displayed and you are asked to confirm it. If you answer
+"no", enter the desired IP and press <kbd>Enter</kbd> to continue. You can also
+set the `HOST_IP` environment variable or call `npm run build:actual` directly
+to skip detection.
 
 The provided URL becomes the API endpoint that the browser communicates with.
 
