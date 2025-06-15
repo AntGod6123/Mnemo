@@ -55,6 +55,7 @@ from routes.config import load_config
 ZIM_INDEX = {}
 ZIM_META = []
 ZIM_LOCK = Lock()
+FTS_LOCK = Lock()
 CACHE_PATH = "./cache/zim_index.json"
 FTS_DB_PATH = "./cache/search_index.db"
 
@@ -72,7 +73,10 @@ def try_load_cache():
 def search_index_has_entries(zim_name: str) -> bool:
     if not os.path.exists(FTS_DB_PATH):
         return False
-    conn = sqlite3.connect(FTS_DB_PATH)
+    # Allow some time to acquire the write lock and use WAL mode so
+    # search queries can run while indexing is in progress.
+    conn = sqlite3.connect(FTS_DB_PATH, timeout=30)
+    conn.execute("PRAGMA journal_mode=WAL")
     cur = conn.cursor()
     cur.execute("SELECT 1 FROM articles WHERE zim_id=? LIMIT 1", (zim_name,))
     row = cur.fetchone()
@@ -89,7 +93,10 @@ def index_up_to_date(zim_path: Path, meta: dict | None) -> bool:
     )
 
 def _index_thread(zim_name: str, reader: "ZIMReader", meta: dict, cache: dict):
-    count = rebuild_search_index(zim_name, reader)
+    # Indexing can take time and only one thread should write to the
+    # search database at once to avoid locking errors.
+    with FTS_LOCK:
+        count = rebuild_search_index(zim_name, reader)
     with ZIM_LOCK:
         meta["count"] = count
         cache[zim_name] = meta
@@ -107,7 +114,8 @@ def rebuild_search_index(zim_id, reader):
     Returns the number of indexed articles.
     """
     os.makedirs("./cache", exist_ok=True)
-    conn = sqlite3.connect(FTS_DB_PATH)
+    conn = sqlite3.connect(FTS_DB_PATH, timeout=30)
+    conn.execute("PRAGMA journal_mode=WAL")
     cur = conn.cursor()
     cur.execute(
         """

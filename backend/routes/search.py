@@ -10,7 +10,9 @@ router = APIRouter()
 @router.get("/search")
 def search_articles(q: str = Query(..., min_length=1)):
     try:
-        with sqlite3.connect("./cache/search_index.db") as conn:
+        # Allow queries to wait briefly if the index is being updated
+        with sqlite3.connect(FTS_DB_PATH, timeout=30) as conn:
+            conn.execute("PRAGMA journal_mode=WAL")
             conn.row_factory = sqlite3.Row
             cur = conn.cursor()
             cur.execute(
@@ -45,7 +47,8 @@ def search_stream(q: str = Query(..., min_length=1)):
 
     def generate():
         try:
-            conn = sqlite3.connect(FTS_DB_PATH)
+            conn = sqlite3.connect(FTS_DB_PATH, timeout=30)
+            conn.execute("PRAGMA journal_mode=WAL")
             conn.row_factory = sqlite3.Row
             cur = conn.cursor()
             zims = [m["file"] for m in get_zim_metadata()]
