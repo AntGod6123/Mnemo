@@ -30,6 +30,6 @@ app.include_router(llm_router)
 app.include_router(auth_router)
 app.include_router(logs_router)
 
-# Load ZIMs on startup
+# Load ZIMs on startup without blocking on indexing
 logger.info("Mnemo server starting up")
-load_zim_files()
+load_zim_files(blocking=False)

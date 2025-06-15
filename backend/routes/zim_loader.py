@@ -3,6 +3,7 @@ import os
 import json
 import sqlite3
 from libzim.reader import Archive
+from threading import Lock, Thread
 
 
 class Article:
@@ -48,7 +49,6 @@ class ZIMReader:
         except Exception:
             return None
 from pathlib import Path
-from threading import Lock
 from logger import logger
 from routes.config import load_config
 
@@ -68,6 +68,35 @@ def try_load_cache():
         with open(CACHE_PATH) as f:
             return json.load(f)
     return []
+
+def search_index_has_entries(zim_name: str) -> bool:
+    if not os.path.exists(FTS_DB_PATH):
+        return False
+    conn = sqlite3.connect(FTS_DB_PATH)
+    cur = conn.cursor()
+    cur.execute("SELECT 1 FROM articles WHERE zim_id=? LIMIT 1", (zim_name,))
+    row = cur.fetchone()
+    conn.close()
+    return row is not None
+
+def index_up_to_date(zim_path: Path, meta: dict | None) -> bool:
+    if not meta:
+        return False
+    return (
+        meta.get("mtime") == zim_path.stat().st_mtime
+        and meta.get("size") == zim_path.stat().st_size
+        and search_index_has_entries(zim_path.name)
+    )
+
+def _index_thread(zim_name: str, reader: "ZIMReader", meta: dict, cache: dict):
+    count = rebuild_search_index(zim_name, reader)
+    with ZIM_LOCK:
+        meta["count"] = count
+        cache[zim_name] = meta
+        if zim_name in ZIM_INDEX:
+            ZIM_INDEX[zim_name]["meta"]["count"] = count
+        save_cache(list(cache.values()))
+    logger.info(f"Indexed {zim_name} with {count} articles")
 
 def rebuild_search_index(zim_id, reader):
     """Rebuild the FTS search index for a ZIM reader.
@@ -99,8 +128,17 @@ def rebuild_search_index(zim_id, reader):
     conn.close()
     return count
 
-def load_zim_files():
+def load_zim_files(blocking: bool = False):
+    """Load ZIM archives and rebuild their search indexes.
+
+    When *blocking* is False, search index creation occurs in background
+    threads so server startup is not delayed.
+    """
     global ZIM_INDEX, ZIM_META
+
+    cached = {m["file"]: m for m in try_load_cache()}
+    meta_cache: dict[str, dict] = cached.copy()
+
     with ZIM_LOCK:
         ZIM_INDEX.clear()
         ZIM_META.clear()
@@ -113,39 +151,53 @@ def load_zim_files():
         if not base_dir.exists():
             logger.error(f"ZIM directory not found: {base_dir}")
 
-        meta_cache = []
-
         for directory in dirs:
             if not directory.exists():
                 continue
             for zim_path in directory.glob("*.zim"):
                 try:
                     reader = ZIMReader(str(zim_path))
-                    # Build the FTS search index lazily and determine article count
-                    count = rebuild_search_index(zim_path.name, reader)
-
                     over = overrides.get(zim_path.name, {})
+
+                    cached_meta = cached.get(zim_path.name)
+                    mtime = zim_path.stat().st_mtime
+                    size = zim_path.stat().st_size
+
                     zim_meta = {
                         "file": zim_path.name,
                         "title": over.get("title") or reader.title,
                         "lang": reader.language,
-                        "count": count,
+                        "count": cached_meta.get("count", 0) if cached_meta else 0,
+                        "mtime": mtime,
+                        "size": size,
                     }
-                    # Store only the reader and its metadata in memory
+
+                    if "image" in over:
+                        zim_meta["image"] = over["image"]
+
                     ZIM_INDEX[zim_path.name] = {
                         "reader": reader,
                         "meta": zim_meta,
                     }
-                    if "image" in over:
-                        zim_meta["image"] = over["image"]
-                    meta_cache.append(zim_meta)
                     ZIM_META.append(zim_meta)
+                    meta_cache[zim_path.name] = zim_meta
 
-                    logger.info(f"Loaded {zim_path.name} with {count} articles")
+                    if index_up_to_date(zim_path, cached_meta):
+                        logger.info(f"Loaded {zim_path.name} (index up-to-date)")
+                    else:
+                        if blocking:
+                            _index_thread(zim_path.name, reader, zim_meta, meta_cache)
+                        else:
+                            Thread(
+                                target=_index_thread,
+                                args=(zim_path.name, reader, zim_meta, meta_cache),
+                                daemon=True,
+                            ).start()
+                        logger.info(f"Loaded {zim_path.name}; indexing queued")
                 except Exception as e:
                     logger.error(f"Failed to load {zim_path.name}: {e}")
 
-        save_cache(meta_cache)
+        save_cache(list(meta_cache.values()))
 
 def get_zim_metadata():
     with ZIM_LOCK:
