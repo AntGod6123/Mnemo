@@ -37,11 +37,12 @@ git clone https://github.com/AntGod6123/Mnemo.git
 cd Mnemo
 sudo docker compose up --build
 
-``` 
+```
 
 This command builds the backend and frontend containers. After they start,
 visit <http://localhost:3000> to use the interface. The FastAPI backend is
-available at <http://localhost:8000>. If you want LLM features, run your own
+available at <http://localhost:8000>. Search indexes start rebuilding in the
+background so the UI loads immediately. If you want LLM features, run your own
 service separately (for example an Ollama container) and configure its URL in
 the admin panel. When you're done, stop the stack with <kbd>Ctrl</kbd>+<kbd>C</kbd>
 and clean up the containers using:
@@ -95,7 +96,9 @@ Translation support is optional. Install the Argos Translate models from the
 
 Place your ZIM archives in `./data/zim` on the host. This folder is mounted into
 the backend container at `/app/data/zim`. Any `.zim` files you drop there will
-be loaded automatically when the stack starts.
+be loaded automatically when the stack starts. Search indexes are rebuilt in the
+background so the server becomes available immediately; indexing is skipped if a
+matching index already exists.
 
 Place additional ZIM archives in the configured `ZIM_DIR` folder and restart the backend to load them.
 
