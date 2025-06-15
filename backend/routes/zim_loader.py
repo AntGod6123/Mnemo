@@ -4,6 +4,9 @@ import json
 import sqlite3
 from libzim.reader import Archive
 from threading import Lock, Thread
+from pathlib import Path
+from logger import logger
+from routes.config import load_config
 
 
 class Article:
@@ -19,6 +22,12 @@ class ZIMReader:
         keys = set(self.archive.metadata_keys)
         self.title = self._get_meta(keys, "Title") or self._get_meta(keys, "Name") or filename
         self.language = self._get_meta(keys, "Language") or ""
+        self.main_page = None
+        try:
+            if self.archive.has_main_entry:
+                self.main_page = self.archive.main_entry.path
+        except Exception:
+            self.main_page = None
 
     def _get_meta(self, keys, key):
         if key in keys:
@@ -35,6 +44,8 @@ class ZIMReader:
                 if entry.is_redirect:
                     continue
                 item = entry.get_item()
+                if not item.mimetype.startswith("text"):
+                    continue
                 content = item.content.tobytes().decode("utf-8", "ignore")
                 yield Article(entry.title, entry.path, content)
             except Exception:
@@ -44,13 +55,12 @@ class ZIMReader:
         try:
             entry = self.archive.get_entry_by_path(path)
             item = entry.get_item()
+            if not item.mimetype.startswith("text"):
+                return None
             content = item.content.tobytes().decode("utf-8", "ignore")
             return Article(entry.title, entry.path, content)
         except Exception:
             return None
-from pathlib import Path
-from logger import logger
-from routes.config import load_config
 
 ZIM_INDEX = {}
 ZIM_META = []
@@ -178,6 +188,7 @@ def load_zim_files(blocking: bool = False):
                         "count": cached_meta.get("count", 0) if cached_meta else 0,
                         "mtime": mtime,
                         "size": size,
+                        "main_page": reader.main_page,
                     }
 
                     if "image" in over:

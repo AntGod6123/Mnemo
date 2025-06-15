@@ -23,13 +23,14 @@ export default function App() {
 
   return (
     <div className="p-4">
-      {page === 'home' && <Home onSearch={handleSearch} />}
+      {page === 'home' && <Home onSearch={handleSearch} onOpenZim={openTab} />}
       {page === 'results' && (
         <SearchResults
           initialQuery={searchData.query}
           initialResults={searchData.results}
           initialAnswer={searchData.answer}
           onHome={goHome}
+          onOpenArticle={openTab}
         />
       )}
       <ZimBrowserTabs ref={tabsRef} />
