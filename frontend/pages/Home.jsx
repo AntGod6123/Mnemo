@@ -4,7 +4,7 @@ import Header from '../components/Header';
 import { apiFetch } from '../api';
 import logo from '../logo.png';
 
-export default function Home({ onSearch }) {
+export default function Home({ onSearch, onOpenZim }) {
   const [zimFiles, setZimFiles] = useState([]);
 
   const loadZims = () => {
@@ -31,9 +31,12 @@ export default function Home({ onSearch }) {
           {zimFiles.map((zim, i) => (
             <a
               key={i}
-              href={`#/zim/${zim.file}`}
-              target="_blank"
-              rel="noopener noreferrer"
+              href={zim.main_page ? '#' : `#/zim/${zim.file}`}
+              onClick={e => {
+                if (!zim.main_page) return;
+                e.preventDefault();
+                if (onOpenZim) onOpenZim(zim.file, zim.main_page, zim.title);
+              }}
               className="block p-4 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition text-left shadow-sm"
             >
               {zim.image ? (

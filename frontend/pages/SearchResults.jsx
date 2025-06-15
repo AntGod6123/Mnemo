@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import SearchPanel from '../components/SearchPanel';
-import { API_BASE } from '../api';
 import Header from '../components/Header';
 
-export default function SearchResults({ initialQuery, initialResults, initialAnswer, onHome }) {
+export default function SearchResults({ initialQuery, initialResults, initialAnswer, onHome, onOpenArticle }) {
   const [query, setQuery] = useState(initialQuery || '');
   const [results, setResults] = useState(initialResults || []);
   const [answer, setAnswer] = useState(initialAnswer || '');
@@ -30,9 +29,11 @@ export default function SearchResults({ initialQuery, initialResults, initialAns
         {results.map((r, i) => (
           <li key={i} className="mb-2">
             <a
-              href={`${API_BASE}/article/${r.zim_id}/${r.path}`}
-              target="_blank"
-              rel="noopener noreferrer"
+              href="#"
+              onClick={e => {
+                e.preventDefault();
+                if (onOpenArticle) onOpenArticle(r.zim_id, r.path, r.title);
+              }}
               className="text-blue-600 dark:text-blue-300 hover:underline"
             >
               {r.title}
