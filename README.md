@@ -73,14 +73,11 @@ specified, the default is 30 minutes.
 
 #### Building the Frontend
 
-Running `npm run build` attempts to detect the host IP automatically using the
-`host.docker.internal` DNS entry or by reading the container's default gateway.
-The detected address is displayed and you are asked to confirm it. If you answer
-"no", enter the desired IP and press <kbd>Enter</kbd> to continue. You can also
-set the `HOST_IP` environment variable or call `npm run build:actual` directly
-to skip detection.
-
-The provided URL becomes the API endpoint that the browser communicates with.
+Running `npm run build` prompts you for the backend host IP. The value you enter
+becomes the API endpoint that the browser communicates with. If the `HOST_IP`
+environment variable is set, it appears as the default value in the prompt. The
+command runs Tailwind through `postcss.config.js` so all utility classes
+compile correctly.
 
 ### Default Admin Login
 
@@ -139,6 +136,5 @@ To generate the production assets manually use:
 npm run build
 ```
 
-If automatic detection fails, the script falls back to an interactive prompt
-unless `HOST_IP` is already defined. The command runs Tailwind through
-`postcss.config.js` so all utility classes compile correctly.
+The build script will ask for the backend host IP and then run Vite with that
+URL.
